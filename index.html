@@ -912,8 +912,8 @@ const STAFF = {
 
 function renderStaff() {
   const role = staffSession.role, cfg = STAFF[role];
-  $('#staffTitle').textContent = `Панель: ${cfg.name}`;
-  $('#staffRoleTitle').textContent = `Панель: ${cfg.name}`;
+  $('#staffTitle').textContent = `Панель: ${cfg.name} ${staffSession.restName ? `«${staffSession.restName}»` : ''}`;
+  $('#staffRoleTitle').textContent = `Панель: ${cfg.name} ${staffSession.restName ? `«${staffSession.restName}»` : ''}`;
   $('#staffChip').textContent = `Сотрудник ${cfg.name}`;
   
   $('#staffTabs').innerHTML = `<button class="admin-tab active">${cfg.tab}</button>`;
@@ -921,9 +921,12 @@ function renderStaff() {
 }
 
 function viewRestaurantAdmin() {
-  const bks = getGlobalBookings().sort((a,b) => a.startTs - b.startTs);
+  // Фильтруем брони: показываем только те, что относятся к выбранному ресторану
+  const allBks = getGlobalBookings();
+  const bks = allBks.filter(b => b.restId === staffSession.restId).sort((a,b) => a.startTs - b.startTs);
+  
   return `<div class="stack">
-    <p class="muted">Всего активных броней: ${bks.length}</p>
+    <p class="muted">Всего броней в этот ресторан: ${bks.length}</p>
     <section class="card">
       <div class="rows">
         ${bks.length ? bks.map(b => `
@@ -937,24 +940,24 @@ function viewRestaurantAdmin() {
               <button class="btn sm ghost" data-act="rest-arrive" data-id="${b.id}">Пришел</button>
             </div>
           </div>
-        `).join('') : '<p class="empty">Броней нет.</p>'}
+        `).join('') : '<p class="empty">Броней в этот ресторан пока нет.</p>'}
       </div>
     </section>
   </div>`;
 }
 
 function viewReceptionAdmin() {
-  const man = JSON.parse(localStorage.getItem(MANIFEST_KEY)) || {};
+  const man = getManifest();
   const list = Object.entries(man).map(([email, cabin]) => ({ email, cabin }));
   return `<div class="stack">
     <section class="card">
       <h2>Добавить пассажира</h2>
-      <p class="muted" style="font-size:.9rem">Внесите данные, чтобы пассажир смог зарегистрироваться на сайте.</p>
+      <p class="muted" style="font-size:.9rem">Пароль для входа на сайт будет: <b>123456</b>.</p>
       <form id="staff-reception-form" class="stack" style="gap:12px">
         <label class="fld"><span>Имя (Фамилия)</span><input type="text" id="st-name" required placeholder="Иванов Иван"></label>
         <label class="fld"><span>Email (для входа)</span><input type="email" id="st-email" required placeholder="ivan@example.com"></label>
         <label class="fld"><span>Каюта</span><input type="text" id="st-cabin" required maxlength="6" placeholder="4012"></label>
-        <button type="submit" class="btn primary">${icon('plus')}Добавить</button>
+        <button type="submit" class="btn primary">${icon('plus')}Добавить гостя</button>
       </form>
     </section>
     <section class="card">
@@ -1066,9 +1069,9 @@ const ACTIONS = {
   // ==== Панель Ресепшн ====
   'rest-remove-man'(el) {
     const email = el.dataset.id;
-    const man = JSON.parse(localStorage.getItem(MANIFEST_KEY)) || {};
+    const man = getManifest();
     delete man[email];
-    localStorage.setItem(MANIFEST_KEY, JSON.stringify(man));
+    saveManifest(man);
     toast('Пассажир удален', 'info');
     renderStaff();
     return false;
@@ -1128,7 +1131,7 @@ if (!localStorage.getItem(MANIFEST_KEY)) {
 
 const SHIP_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 16l2.5 4h15L22 16z"/><path d="M6 16v-5h12v5"/><path d="M10 11V7h4v4"/><path d="M12 4v3"/></svg>';
 const authUI = { role: 'guest', mode: 'login', email: '' };
-const staffSession = { role: null };
+const staffSession = { role: null, restId: null, restName: null };
 const normEmail = s => String(s || '').trim().toLowerCase();
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
@@ -1164,8 +1167,10 @@ function enter(u) {
   showApp(true); render(); tick();
   window.scrollTo(0, 0);
 }
-function enterStaff(role) {
+function enterStaff(role, restId) {
   staffSession.role = role;
+  staffSession.restId = restId || null;
+  staffSession.restName = restId ? REST(restId).name : null;
   showStaff(true); renderStaff();
   window.scrollTo(0, 0);
 }
@@ -1175,7 +1180,7 @@ function logout() {
   toast('Вы вышли из аккаунта', 'info');
 }
 function logoutStaff() {
-  staffSession.role = null;
+  staffSession.role = null; staffSession.restId = null; staffSession.restName = null;
   showApp(false); renderAuth(); window.scrollTo(0, 0);
   toast('Вы вышли из панели', 'info');
 }
@@ -1188,6 +1193,7 @@ function demoLogin() {
 function renderAuth() {
   const reg = authUI.mode === 'register';
   const isGuest = authUI.role === 'guest';
+  const isRest = authUI.role === 'rest';
   
   let formHtml = '';
   if (isGuest) {
@@ -1202,6 +1208,20 @@ function renderAuth() {
       </form>
       <div class="or">или</div>
       <button type="button" class="btn" data-act="demo-login">${icon('users')}Войти как демо-гость</button>
+    `;
+  } else if (isRest) {
+    formHtml = `
+      <form id="staff-form" class="stack" style="gap:14px" novalidate>
+        <label class="fld" for="st-rest"><span>Ресторан</span>
+          <select id="st-rest">
+            ${RESTAURANTS.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
+          </select>
+        </label>
+        <label class="fld" for="st-pass"><span>Код доступа</span><input type="password" id="st-pass" placeholder="Введите код (123)"></label>
+        <div class="err" id="auth-err" role="alert" hidden></div>
+        <button type="submit" class="btn primary">Войти в панель</button>
+      </form>
+      <p class="auth-note" style="margin-top:10px">Демо-код для входа: <b>123</b></p>
     `;
   } else {
     formHtml = `
@@ -1219,7 +1239,7 @@ function renderAuth() {
     <section class="card" aria-labelledby="h-auth">
       <div class="seg role-seg" role="group" aria-label="Роль">
         <button type="button" class="seg-b" data-act="role-mode" data-role="guest" aria-pressed="${isGuest}">Гость</button>
-        <button type="button" class="seg-b" data-act="role-mode" data-role="rest" aria-pressed="${authUI.role === 'rest'}">Ресторан</button>
+        <button type="button" class="seg-b" data-act="role-mode" data-role="rest" aria-pressed="${isRest}">Ресторан</button>
         <button type="button" class="seg-b" data-act="role-mode" data-role="reception" aria-pressed="${authUI.role === 'reception'}">Ресепшн</button>
       </div>
       
@@ -1282,7 +1302,13 @@ function submitAuth() {
 function submitStaffAuth() {
   const pass = $('#st-pass').value;
   if (pass !== '123') return authFail('Неверный код доступа', 'st-pass');
-  enterStaff(authUI.role);
+  
+  if (authUI.role === 'rest') {
+    const restId = $('#st-rest').value;
+    enterStaff('rest', restId);
+  } else {
+    enterStaff('reception');
+  }
 }
 
 document.addEventListener('submit', e => {
