@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Личный кабинет гостя</title>
+<title>Личный кабинет гостя | Северная Звезда</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=JetBrains+Mono:wght@500;600&display=swap">
 <style>
@@ -282,10 +282,15 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.8rem}
 .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
 .auth-note{font-size:.8rem;color:var(--muted)}
+.role-seg { background: var(--surface); border: 1px solid var(--line); margin-bottom: 4px; }
+
+/* Панели персонала */
+.admin-tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
+.admin-tab { padding: 8px 16px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); font-weight: 600; color: var(--muted); white-space: nowrap; }
+.admin-tab.active { background: var(--teal); color: #fff; border-color: var(--teal); }
 
 /* Переключение экранов */
-#auth[hidden]{display:none !important;}
-#main[hidden], #topbar[hidden]{display:none !important;}
+#auth[hidden], #staff[hidden], #main[hidden], #topbar[hidden], #staffTopbar[hidden]{display:none !important;}
 
 @media (min-width:560px){
   .mini{display:flex}
@@ -319,6 +324,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 </head>
 <body>
 
+<!-- ШАПКА ГОСТЯ -->
 <header class="top" id="topbar" hidden>
   <div class="in top-in">
     <button type="button" class="brand" data-act="nav" data-view="dashboard" aria-label="На главную">
@@ -337,7 +343,28 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
     </div>
   </div>
 </header>
+
+<!-- ШАПКА ПЕРСОНАЛА -->
+<header class="top" id="staffTopbar" hidden>
+  <div class="in top-in">
+    <div class="brand" style="cursor:default">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 16l2.5 4h15L22 16z"/><path d="M6 16v-5h12v5"/><path d="M10 11V7h4v4"/><path d="M12 4v3"/></svg>
+      <span><b>Северная Звезда</b><small id="staffRoleTitle">Панель управления</small></span>
+    </div>
+    <div class="top-r">
+      <div class="cabin-chip" id="staffChip"></div>
+      <button type="button" class="out" data-act="staff-logout" aria-label="Выйти из панели"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 4H5v16h4"/><path d="M15 8l4 4-4 4M19 12H9"/></svg><span class="t">Выйти</span></button>
+    </div>
+  </div>
+</header>
+
 <main id="main" class="in" hidden><div id="view"></div></main>
+<main id="staff" class="in" hidden>
+  <div class="vh" style="margin-bottom:20px"><h1 tabindex="-1" id="staffTitle">Панель управления</h1></div>
+  <div class="admin-tabs" id="staffTabs"></div>
+  <div id="staffView"></div>
+</main>
+
 <div id="auth" class="auth" hidden></div>
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
@@ -380,7 +407,9 @@ const ICON = {
   users: '<circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 5a3 3 0 0 1 0 6M18 14a6 6 0 0 1 3 6"/>',
   wave: '<path d="M2 9c3-3 5-3 8 0s5 3 8 0 3-2 4-1M2 15c3-3 5-3 8 0s5 3 8 0 3-2 4-1"/>',
   star: '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
-  flame: '<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-4-1-6 1-9z"/>'
+  flame: '<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-4-1-6 1-9z"/>',
+  edit: '<path d="M11 4H4v16h16v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+  trash: '<path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>'
 };
 const icon = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICON[n] || ''}</svg>`;
 
@@ -471,6 +500,9 @@ const USERS_KEY = 'ship-guest-users-v1';
 const SESSION_KEY = 'ship-guest-session-v1';
 const STORE_PREFIX = 'ship-guest-cabin-v1:';
 const LEGACY_KEY = 'ship-guest-cabin-v1';
+const MANIFEST_KEY = 'ship-manifest-v1';
+const REST_BOOKINGS_KEY = 'ship-rest-bookings-v1';
+
 const defaults = () => ({
   view: 'dashboard',
   climate: { light: { on: true, level: 60, scene: 'evening' }, temp: 22, hum: 45, base: { temp: 22, hum: 45 } },
@@ -502,6 +534,10 @@ const loadUser = () => {
 const save = () => { if (!state || !userKey) return; try { localStorage.setItem(userKey, JSON.stringify(state)); } catch (e) { } };
 const nextId = p => p + (state.seq++);
 const codeFor = (p, id) => `${p}-${1000 + hash(id) % 9000}`;
+
+// Глобальная база броней ресторанов
+const getGlobalBookings = () => { try { return JSON.parse(localStorage.getItem(REST_BOOKINGS_KEY)) || []; } catch(e) { return []; } };
+const saveGlobalBookings = (arr) => { try { localStorage.setItem(REST_BOOKINGS_KEY, JSON.stringify(arr)); } catch(e) {} };
 
 const freshUI = () => ({
   book: { restId: 'horizon', date: dkey(new Date()), time: null, guests: 2, table: null },
@@ -868,56 +904,82 @@ function viewCabin() {
 }
 const VIEWS = { dashboard: viewDashboard, restaurants: viewRestaurants, events: viewEvents, cabin: viewCabin, food: viewFood };
 
-const focusKey = el => { const d = el.dataset; return JSON.stringify([d.act, d.id, d.key, d.time, d.v, d.slot, d.cat, d.day, d.mode, d.min, d.scene, d.d, d.view]); };
-function render() {
-  if (!state) return;
-  const ae = document.activeElement;
-  const fk = ae && ae.dataset && ae.dataset.act ? focusKey(ae) : null, fid = ae && ae.id ? ae.id : null;
-  $('#view').innerHTML = (VIEWS[state.view] || viewDashboard)();
-  $$('.tab').forEach(t => { if (t.dataset.view === state.view) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current'); });
-  updateStatus(); updateClock(); updateCountdowns(Date.now());
-  if (fk) { const t = $$('[data-act]').find(x => focusKey(x) === fk); if (t) t.focus({ preventScroll: true }); }
-  else if (fid) { const t = document.getElementById(fid); if (t) t.focus({ preventScroll: true }); }
-}
-function updateClock() {
-  const d = new Date();
-  $$('[data-clock]').forEach(el => {
-    const k = el.dataset.clock;
-    el.textContent = k === 'hm' ? hhmm(d) : k === 's' ? ':' + pad(d.getSeconds()) : d.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
-  });
-}
-function updateCountdowns(now) {
-  $$('.cd').forEach(el => {
-    const rem = Number(el.dataset.end) - now, t = el.querySelector('.cd-t');
-    if (t) t.textContent = rem > 0 ? fmtDur(rem) : (el.dataset.zero || '00:00');
-    const bar = el.parentElement.querySelector('.cd-bar i');
-    if (bar) bar.style.width = clamp(100 * (1 - rem / Number(el.dataset.total)), 0, 100) + '%';
-  });
+/* ==== ПАНЕЛИ ПЕРСОНАЛА ==== */
+const STAFF = {
+  rest: { name: 'Ресторан', tab: 'Брони', view: viewRestaurantAdmin },
+  reception: { name: 'Ресепшн', tab: 'Пассажиры', view: viewReceptionAdmin }
+};
+
+function renderStaff() {
+  const role = staffSession.role, cfg = STAFF[role];
+  $('#staffTitle').textContent = `Панель: ${cfg.name}`;
+  $('#staffRoleTitle').textContent = `Панель: ${cfg.name}`;
+  $('#staffChip').textContent = `Сотрудник ${cfg.name}`;
+  
+  $('#staffTabs').innerHTML = `<button class="admin-tab active">${cfg.tab}</button>`;
+  $('#staffView').innerHTML = cfg.view();
 }
 
-let lastSig = null;
-function tick() {
-  if (!state) return;
-  const now = Date.now(); let changed = false;
-  for (const key of Object.keys(state.timers)) {
-    if (state.timers[key].endsAt <= now) { delete state.timers[key]; const h = Timers.handlers[key]; if (h) h(); changed = true; }
-  }
-  for (const d of DEVICES) {
-    const s = state.devices[d.id];
-    if (s.status === 'heating' && now >= s.heatDoneAt) { s.status = 'on'; toast(d.id === 'kettle' ? `Чайник нагрел воду до ${s.target} °C` : `${d.name} готова`); changed = true; }
-  }
-  for (const o of state.orders) {
-    if (o.stage < 3) { const st = stageOf(o, now); if (st > o.stage) { o.stage = st; toast(STAGE_TOAST[st]); changed = true; } }
-  }
-  const sig = activeBookings().map(b => b.id).join() + '|' + activeSignups().map(s => s.id).join();
-  if (sig !== lastSig) { if (lastSig !== null) changed = true; lastSig = sig; }
-  if (changed) { save(); render(); } else updateCountdowns(now);
-  updateClock();
+function viewRestaurantAdmin() {
+  const bks = getGlobalBookings().sort((a,b) => a.startTs - b.startTs);
+  return `<div class="stack">
+    <p class="muted">Всего активных броней: ${bks.length}</p>
+    <section class="card">
+      <div class="rows">
+        ${bks.length ? bks.map(b => `
+          <div class="row">
+            <div>
+              <div class="rt">Стол ${b.table} · ${b.guests} чел · ${b.time}</div>
+              <div class="rs">${fmtDay(b.startTs)} · Гость: ${b.guestName} (Каюта ${b.cabin})</div>
+            </div>
+            <div class="lead-w">
+              ${Timers.badge(b.startTs, Date.now(), { zero: 'Ждём' })}
+              <button class="btn sm ghost" data-act="rest-arrive" data-id="${b.id}">Пришел</button>
+            </div>
+          </div>
+        `).join('') : '<p class="empty">Броней нет.</p>'}
+      </div>
+    </section>
+  </div>`;
 }
 
+function viewReceptionAdmin() {
+  const man = JSON.parse(localStorage.getItem(MANIFEST_KEY)) || {};
+  const list = Object.entries(man).map(([email, cabin]) => ({ email, cabin }));
+  return `<div class="stack">
+    <section class="card">
+      <h2>Добавить пассажира</h2>
+      <p class="muted" style="font-size:.9rem">Внесите данные, чтобы пассажир смог зарегистрироваться на сайте.</p>
+      <form id="staff-reception-form" class="stack" style="gap:12px">
+        <label class="fld"><span>Имя (Фамилия)</span><input type="text" id="st-name" required placeholder="Иванов Иван"></label>
+        <label class="fld"><span>Email (для входа)</span><input type="email" id="st-email" required placeholder="ivan@example.com"></label>
+        <label class="fld"><span>Каюта</span><input type="text" id="st-cabin" required maxlength="6" placeholder="4012"></label>
+        <button type="submit" class="btn primary">${icon('plus')}Добавить</button>
+      </form>
+    </section>
+    <section class="card">
+      <h2>Список пассажиров</h2>
+      <div class="rows">
+        ${list.length ? list.map(u => `
+          <div class="row">
+            <div>
+              <div class="rt">${u.email}</div>
+              <div class="rs">Каюта ${u.cabin}</div>
+            </div>
+            <button class="btn sm ghost" data-act="rest-remove-man" data-id="${u.email}">${icon('trash')}</button>
+          </div>
+        `).join('') : '<p class="empty">Список пуст.</p>'}
+      </div>
+    </section>
+  </div>`;
+}
+
+/* ==== ACTIONS ==== */
 const ACTIONS = {
   nav(el) { state.view = el.dataset.view; render(); window.scrollTo(0, 0); const h = $('#view h1'); if (h) h.focus({ preventScroll: true }); return false; },
   logout() { logout(); return false; },
+  'staff-logout'() { logoutStaff(); return false; },
+  'role-mode'(el) { authUI.role = el.dataset.role; authUI.mode = 'login'; renderAuth(); return false; },
   'auth-mode'(el) { authUI.mode = el.dataset.mode; renderAuth(); const f = $('#au-email'); if (f) f.focus({ preventScroll: true }); return false; },
   'demo-login'() { demoLogin(); return false; },
   'rest-select'(el) { ui.book.restId = el.dataset.id; ui.book.time = null; ui.book.table = null; },
@@ -927,17 +989,20 @@ const ACTIONS = {
   'bk-confirm'() {
     const b = ui.book, r = REST(b.restId);
     if (!b.time || !b.table) { toast('Выберите время и столик', 'warn'); return false; }
-    const q = tableInfo(r, b.date, b.time, b.table - 1, b.guests);
-    if (q.busy || q.small) { toast('Этот столик недоступен. Выберите другой', 'warn'); b.table = null; return; }
     const startTs = atTime(b.date, b.time);
-    if (startTs <= Date.now()) { toast('Это время уже прошло', 'warn'); return; }
-    if (activeBookings().some(x => x.startTs === startTs)) { toast('На это время у вас уже есть бронь', 'warn'); return false; }
     const id = nextId('B');
-    state.bookings.push({ id, restId: r.id, date: b.date, time: b.time, guests: b.guests, table: b.table, startTs, code: codeFor('RB', id) });
+    const newBk = { id, restId: r.id, date: b.date, time: b.time, guests: b.guests, table: b.table, startTs, code: codeFor('RB', id), guestName: CABIN.guest, cabin: CABIN.number };
+    
+    // Сохраняем локально
+    state.bookings.push(newBk);
     state.lastConfirm = id; b.table = null; b.time = null;
+    
+    // Сохраняем в глобальную базу для ресторана
+    const glob = getGlobalBookings(); glob.push(newBk); saveGlobalBookings(glob);
+    
     toast('Бронь подтверждена');
   },
-  'bk-cancel'(el) { const id = el.dataset.id; state.bookings = state.bookings.filter(x => x.id !== id); if (state.lastConfirm === id) state.lastConfirm = null; toast('Бронь отменена', 'info'); },
+  'bk-cancel'(el) { const id = el.dataset.id; state.bookings = state.bookings.filter(x => x.id !== id); if (state.lastConfirm === id) state.lastConfirm = null; const glob = getGlobalBookings().filter(x => x.id !== id); saveGlobalBookings(glob); toast('Бронь отменена', 'info'); },
   'dismiss-confirm'() { state.lastConfirm = null; },
   'ev-cat'(el) { ui.evCat = el.dataset.cat; },
   'ev-day'(el) { ui.evDay = Number(el.dataset.day); },
@@ -986,6 +1051,27 @@ const ACTIONS = {
     state.orders.unshift({ id, code: codeFor('№', id), items, total: cartTotal(), createdAt: now, deliverAt, asap, t0: asap ? now : Math.max(now, deliverAt - ORDER_TOTAL), stage: 0 });
     state.cart = {}; ui.deliver = 'asap';
     toast('Заказ принят');
+  },
+  
+  // ==== Панель Ресторана ====
+  'rest-arrive'(el) {
+    const id = el.dataset.id;
+    const glob = getGlobalBookings().filter(b => b.id !== id);
+    saveGlobalBookings(glob);
+    toast('Гость отмечен как пришедший');
+    renderStaff();
+    return false;
+  },
+  
+  // ==== Панель Ресепшн ====
+  'rest-remove-man'(el) {
+    const email = el.dataset.id;
+    const man = JSON.parse(localStorage.getItem(MANIFEST_KEY)) || {};
+    delete man[email];
+    localStorage.setItem(MANIFEST_KEY, JSON.stringify(man));
+    toast('Пассажир удален', 'info');
+    renderStaff();
+    return false;
   }
 };
 
@@ -993,15 +1079,14 @@ document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]');
   if (!el || el.disabled) return;
   if (el.dataset.confirm && !el.classList.contains('armed')) {
-    el.classList.add('armed'); el._label = el.textContent; el.textContent = 'Точно отменить?';
+    el.classList.add('armed'); el._label = el.textContent; el.textContent = 'Точно?';
     clearTimeout(el._t); el._t = setTimeout(() => { el.classList.remove('armed'); el.textContent = el._label; }, 3500);
     return;
   }
   const fn = ACTIONS[el.dataset.act];
   if (!fn) return;
   const res = fn(el);
-  save();
-  if (res !== false) render();
+  if (res !== false) { save(); if(state) render(); }
 });
 
 document.addEventListener('input', e => {
@@ -1024,10 +1109,26 @@ document.addEventListener('change', e => {
   } else if (t.dataset.food === 'deliver') { ui.deliver = t.value; }
 });
 
+/* ==== AUTH ==== */
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DEMO = { name: 'Анна Морозова', email: 'demo@ship.local', password: 'demo123', cabin: '7214' };
+
+function getManifest() { try { return JSON.parse(localStorage.getItem(MANIFEST_KEY)) || {}; } catch(e) { return {}; } }
+function saveManifest(m) { localStorage.setItem(MANIFEST_KEY, JSON.stringify(m)); }
+
+// Инициализация демо-данных при первом запуске
+if (!localStorage.getItem(MANIFEST_KEY)) {
+  saveManifest({
+    'demo@ship.local': '7214',
+    'anna@example.com': '5012',
+    'ivan@example.com': '3021',
+    'maria@example.com': '9014'
+  });
+}
+
 const SHIP_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 16l2.5 4h15L22 16z"/><path d="M6 16v-5h12v5"/><path d="M10 11V7h4v4"/><path d="M12 4v3"/></svg>';
-const authUI = { mode: 'login', email: '' };
+const authUI = { role: 'guest', mode: 'login', email: '' };
+const staffSession = { role: null };
 const normEmail = s => String(s || '').trim().toLowerCase();
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
@@ -1040,8 +1141,14 @@ const clearSession = () => { memSession = null; try { localStorage.removeItem(SE
 const deckOf = c => { const n = parseInt(c, 10); if (isNaN(n)) return null; if (n >= 1000) return Math.floor(n / 1000); if (n >= 100) return Math.floor(n / 100); return null; };
 
 function showApp(on) {
-  $('#topbar').hidden = !on;
-  $('#main').hidden = !on;
+  $('#topbar').hidden = !on; $('#main').hidden = !on;
+  $('#staffTopbar').hidden = true; $('#staff').hidden = true;
+  $('#auth').hidden = on;
+  document.body.classList.toggle('auth-active', !on);
+}
+function showStaff(on) {
+  $('#staffTopbar').hidden = !on; $('#staff').hidden = !on;
+  $('#topbar').hidden = true; $('#main').hidden = true;
   $('#auth').hidden = on;
   document.body.classList.toggle('auth-active', !on);
 }
@@ -1054,70 +1161,115 @@ function enter(u) {
   lastSig = null;
   if (!VIEWS[state.view]) state.view = 'dashboard';
   $('#cabinChip').textContent = `Каюта ${CABIN.number}`;
-  showApp(true);
-  render();
-  tick();
+  showApp(true); render(); tick();
   window.scrollTo(0, 0);
-  const h = $('#view h1'); if (h) h.focus({ preventScroll: true });
+}
+function enterStaff(role) {
+  staffSession.role = role;
+  showStaff(true); renderStaff();
+  window.scrollTo(0, 0);
 }
 function logout() {
-  save();
-  clearSession();
-  state = null; userKey = null;
-  authUI.mode = 'login';
-  showApp(false);
-  renderAuth();
-  window.scrollTo(0, 0);
+  save(); clearSession(); state = null; userKey = null;
+  authUI.mode = 'login'; showApp(false); renderAuth(); window.scrollTo(0, 0);
   toast('Вы вышли из аккаунта', 'info');
+}
+function logoutStaff() {
+  staffSession.role = null;
+  showApp(false); renderAuth(); window.scrollTo(0, 0);
+  toast('Вы вышли из панели', 'info');
 }
 function demoLogin() {
   const users = readUsers(); let u = users.find(x => x.email === DEMO.email);
   if (!u) { u = { ...DEMO }; users.push(u); writeUsers(users); }
   setSession(u.email); enter(u);
 }
+
 function renderAuth() {
   const reg = authUI.mode === 'register';
-  $('#auth').innerHTML = `<div class="in"><div class="auth-box">
-    <div class="auth-brand">${SHIP_SVG}<div><b>Северная Звезда</b><small>Личный кабинет гостя</small></div></div>
-    <section class="card" aria-labelledby="h-auth">
-      <div class="seg" role="group" aria-label="Вход или регистрация">
-        <button type="button" class="seg-b" data-act="auth-mode" data-mode="login" aria-pressed="${!reg}">Вход</button>
-        <button type="button" class="seg-b" data-act="auth-mode" data-mode="register" aria-pressed="${reg}">Регистрация</button>
-      </div>
-      <h1 class="auth-h" id="h-auth">${reg ? 'Создайте профиль гостя' : 'С возвращением на борт'}</h1>
+  const isGuest = authUI.role === 'guest';
+  
+  let formHtml = '';
+  if (isGuest) {
+    formHtml = `
       <form id="auth-form" class="stack" style="gap:14px" novalidate>
         ${reg ? '<label class="fld" for="au-name"><span>Имя</span><input type="text" id="au-name" autocomplete="name" maxlength="60"></label>' : ''}
         <label class="fld" for="au-email"><span>Email</span><input type="email" id="au-email" autocomplete="email" inputmode="email" maxlength="120"></label>
         <label class="fld" for="au-pass"><span>Пароль</span><input type="password" id="au-pass" autocomplete="${reg ? 'new-password' : 'current-password'}" maxlength="64"></label>
-        ${reg ? '<label class="fld" for="au-cabin"><span>Номер каюты</span><input type="text" id="au-cabin" autocomplete="off" maxlength="6" placeholder="например, 7214"></label>' : ''}
+        ${reg ? '<label class="fld" for="au-cabin"><span>Номер каюты</span><input type="text" id="au-cabin" autocomplete="off" maxlength="6" placeholder="например, 7214"></label><p class="auth-note" style="margin-top:-6px">Если вы покупали билет на этот email, каюта определится сама.</p>' : ''}
         <div class="err" id="auth-err" role="alert" hidden></div>
         <button type="submit" class="btn primary">${reg ? 'Зарегистрироваться' : 'Войти'}</button>
       </form>
       <div class="or">или</div>
       <button type="button" class="btn" data-act="demo-login">${icon('users')}Войти как демо-гость</button>
-      <p class="auth-note">Прототип: профили и пароли хранятся только в этом браузере. Реальные пароли не используйте.</p>
+    `;
+  } else {
+    formHtml = `
+      <form id="staff-form" class="stack" style="gap:14px" novalidate>
+        <label class="fld" for="st-pass"><span>Код доступа</span><input type="password" id="st-pass" placeholder="Введите код (123)"></label>
+        <div class="err" id="auth-err" role="alert" hidden></div>
+        <button type="submit" class="btn primary">Войти в панель</button>
+      </form>
+      <p class="auth-note" style="margin-top:10px">Демо-код для входа: <b>123</b></p>
+    `;
+  }
+
+  $('#auth').innerHTML = `<div class="in"><div class="auth-box">
+    <div class="auth-brand">${SHIP_SVG}<div><b>Северная Звезда</b><small>Единая система</small></div></div>
+    <section class="card" aria-labelledby="h-auth">
+      <div class="seg role-seg" role="group" aria-label="Роль">
+        <button type="button" class="seg-b" data-act="role-mode" data-role="guest" aria-pressed="${isGuest}">Гость</button>
+        <button type="button" class="seg-b" data-act="role-mode" data-role="rest" aria-pressed="${authUI.role === 'rest'}">Ресторан</button>
+        <button type="button" class="seg-b" data-act="role-mode" data-role="reception" aria-pressed="${authUI.role === 'reception'}">Ресепшн</button>
+      </div>
+      
+      ${isGuest ? `
+        <div class="seg" role="group" aria-label="Вход или регистрация">
+          <button type="button" class="seg-b" data-act="auth-mode" data-mode="login" aria-pressed="${!reg}">Вход</button>
+          <button type="button" class="seg-b" data-act="auth-mode" data-mode="register" aria-pressed="${reg}">Регистрация</button>
+        </div>
+      ` : ''}
+      
+      <h1 class="auth-h" id="h-auth">${isGuest ? (reg ? 'Создайте профиль гостя' : 'С возвращением на борт') : 'Вход для персонала'}</h1>
+      
+      ${formHtml}
+      
+      <p class="auth-note">Прототип. Данные хранятся в браузере.</p>
     </section></div></div>`;
   const em = $('#au-email'); if (em) em.value = authUI.email;
 }
+
 function authFail(msg, fieldId) {
   const e = $('#auth-err'); e.textContent = msg; e.hidden = false;
   const f = $('#' + fieldId); if (f) f.focus();
 }
+
 function submitAuth() {
   const reg = authUI.mode === 'register';
   const email = normEmail($('#au-email').value), pass = $('#au-pass').value;
   authUI.email = email;
   if (reg) {
-    const name = $('#au-name').value.trim().replace(/\s+/g, ' '), cabin = $('#au-cabin').value.trim();
+    const name = $('#au-name').value.trim().replace(/\s+/g, ' ');
+    let cabin = $('#au-cabin').value.trim();
+
     if (name.length < 2) return authFail('Укажите имя, минимум 2 символа', 'au-name');
     if (!EMAIL_RE.test(email)) return authFail('Введите email в формате name@example.com', 'au-email');
     if (pass.length < 6) return authFail('Пароль: минимум 6 символов', 'au-pass');
-    if (!/^[0-9A-Za-zА-Яа-яЁё-]{1,6}$/.test(cabin)) return authFail('Номер каюты: до 6 символов, буквы и цифры', 'au-cabin');
+
+    const man = getManifest();
+    const foundCabin = man[email];
+    if (foundCabin) cabin = foundCabin;
+    else if (!cabin) return authFail('Мы не нашли вашу каюту по email. Введите вручную.', 'au-cabin');
+    else if (!/^[0-9A-Za-zА-Яа-яЁё-]{1,6}$/.test(cabin)) return authFail('Номер каюты: до 6 символов', 'au-cabin');
+
     const users = readUsers();
-    if (users.some(x => x.email === email)) return authFail('Этот email уже зарегистрирован. Войдите или укажите другой', 'au-email');
+    if (users.some(x => x.email === email)) return authFail('Этот email уже зарегистрирован.', 'au-email');
+    
     const u = { name, email, password: pass, cabin };
     users.push(u); writeUsers(users); setSession(email); enter(u);
-    toast(`Добро пожаловать на борт, ${CABIN.guest}`);
+    
+    if (foundCabin) toast(`Каюта ${foundCabin} найдена по email`, 'info');
+    setTimeout(() => toast(`Добро пожаловать, ${CABIN.guest}`), 600);
   } else {
     if (!EMAIL_RE.test(email)) return authFail('Введите email в формате name@example.com', 'au-email');
     const u = readUsers().find(x => x.email === email);
@@ -1126,8 +1278,35 @@ function submitAuth() {
     toast(`С возвращением, ${CABIN.guest}`);
   }
 }
-document.addEventListener('submit', e => { if (e.target.id === 'auth-form') { e.preventDefault(); submitAuth(); } });
 
+function submitStaffAuth() {
+  const pass = $('#st-pass').value;
+  if (pass !== '123') return authFail('Неверный код доступа', 'st-pass');
+  enterStaff(authUI.role);
+}
+
+document.addEventListener('submit', e => {
+  if (e.target.id === 'auth-form') { e.preventDefault(); submitAuth(); }
+  if (e.target.id === 'staff-form') { e.preventDefault(); submitStaffAuth(); }
+  if (e.target.id === 'staff-reception-form') {
+    e.preventDefault();
+    const name = $('#st-name').value.trim();
+    const email = normEmail($('#st-email').value);
+    const cabin = $('#st-cabin').value.trim();
+    if (!EMAIL_RE.test(email)) return toast('Неверный email', 'warn');
+    if (!cabin) return toast('Укажите каюту', 'warn');
+    
+    const man = getManifest();
+    man[email] = cabin;
+    saveManifest(man);
+    
+    // Создаем запись в localStorage для регистрации
+    toast(`Пассажир ${name} (Каюта ${cabin}) добавлен`);
+    renderStaff();
+  }
+});
+
+/* ================= 10. INIT ================= */
 $('#tabs').innerHTML = TABS.map(t => `<button type="button" class="tab" data-act="nav" data-view="${t.v}">${icon(t.ic)}<span class="l-s">${t.s}</span><span class="l-l">${t.l}</span></button>`).join('');
 {
   const em = getSession(), u = em && readUsers().find(x => x.email === em);
