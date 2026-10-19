@@ -1,14 +1,11 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
 <title>Личный кабинет гостя</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=JetBrains+Mono:wght@500;600&display=swap">
 <style>
-/* =========================================================
-   ДИЗАЙН-ПЛАН
-   Раскладка: липкая тёмно-синяя шапка, колонка контента до 1120px;
-   на телефоне разделы переключаются нижней панелью, с 900px — в шапке.
-   Палитра из ТЗ: глубокий синий #0B2545, бирюза #13A89E, песочный #E9C46A, белый.
-   Шрифты: Playfair Display (заголовки), Manrope (текст), JetBrains Mono (время, цифры).
-   ========================================================= */
 :root{
   --navy:#0B2545; --teal:#13A89E; --sand:#E9C46A;
   --bg:#EDF3F6; --surface:#FFFFFF; --surface-2:#E2ECF0; --ink:#0B2545; --muted:#46596D; --line:#C7D7DF;
@@ -22,27 +19,9 @@
   --f-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   --wave:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='24' viewBox='0 0 120 24'%3E%3Cpath d='M0 12c10-9 20-9 30 0s20 9 30 0 20-9 30 0 20 9 30 0' fill='none' stroke='%23fff' stroke-opacity='.3' stroke-width='1.6'/%3E%3C/svg%3E");
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#061A31; --surface:#0B2545; --surface-2:#10325D; --ink:#EAF3F8; --muted:#A5B9CB; --line:#22497B;
-    --teal-ink:#4FD6CB; --focus:#E9C46A;
-    --btn-bg:#13A89E; --btn-fg:#04182C;
-    --bar:#04142A; --ok:#5EE0A8; --ok-bg:rgba(94,224,168,.14); --bad:#FF9A8D; --bad-bg:rgba(255,154,141,.14);
-    --shadow:0 0 0 rgba(0,0,0,0); color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#061A31; --surface:#0B2545; --surface-2:#10325D; --ink:#EAF3F8; --muted:#A5B9CB; --line:#22497B;
-  --teal-ink:#4FD6CB; --focus:#E9C46A;
-  --btn-bg:#13A89E; --btn-fg:#04182C;
-  --bar:#04142A; --ok:#5EE0A8; --ok-bg:rgba(94,224,168,.14); --bad:#FF9A8D; --bad-bg:rgba(255,154,141,.14);
-  --shadow:0 0 0 rgba(0,0,0,0); color-scheme:dark;
-}
-
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.5 var(--f-body);min-height:100%}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bar);z-index:30}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.5 var(--f-body);min-height:100vh;display:flex;flex-direction:column}
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
 h1,h2,h3,p,ol,ul{margin:0}
@@ -73,7 +52,7 @@ h1,h2,h3,p,ol,ul{margin:0}
 .tab[aria-current="page"] .ic{color:var(--sand)}
 .l-l{display:none}
 
-main{padding-block:20px 128px}
+main{padding-block:20px 128px; flex:1;}
 .stack{display:flex;flex-direction:column;gap:18px}
 
 /* ---------- Базовые компоненты ---------- */
@@ -120,7 +99,7 @@ input[type=date],input[type=time],input[type=number],input[type=text],input[type
 .pill.warn{background:var(--bad-bg);color:var(--bad)}
 .pill .ic{width:14px;height:14px}
 
-/* Таймер: переиспользуемый компонент обратного отсчёта */
+/* Таймер */
 .cdw{display:inline-flex;flex-direction:column;gap:6px;min-width:0;max-width:100%}
 .cd{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:99px;background:var(--sand);color:#0B2545;font:600 .85rem var(--f-mono);align-self:flex-start;flex-wrap:wrap}
 .cd .ic{width:16px;height:16px}
@@ -145,9 +124,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .switch[aria-checked="true"]{background:var(--teal)}
 .switch[aria-checked="true"] i{transform:translateX(28px)}
 
-/* ---------- Дашборд ---------- */
-.hero{position:relative;overflow:hidden;border-radius:24px;padding:22px 22px 54px;color:#fff;display:grid;gap:20px;
-  background:linear-gradient(160deg,#0B2545 0%,#0E3A63 55%,#0F6A73 100%)}
+/* Дашборд */
+.hero{position:relative;overflow:hidden;border-radius:24px;padding:22px 22px 54px;color:#fff;display:grid;gap:20px;background:linear-gradient(160deg,#0B2545 0%,#0E3A63 55%,#0F6A73 100%)}
 .hero::before,.hero::after{content:"";position:absolute;left:0;right:0;height:24px;background:var(--wave) repeat-x 0 0/120px 24px;pointer-events:none}
 .hero::after{bottom:6px}
 .hero::before{bottom:24px;background-position:40px 0;opacity:.55}
@@ -181,7 +159,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .row .ic.lead{width:22px;height:22px;color:var(--teal-ink)}
 .row .lead-w{display:flex;gap:12px;align-items:center}
 
-/* ---------- Рестораны ---------- */
+/* Рестораны */
 .rgrid{display:grid;grid-template-columns:1fr;gap:14px}
 .rcard{display:flex;flex-direction:column;gap:12px;padding:12px;border-radius:18px;background:var(--surface);border:2px solid var(--line);box-shadow:var(--shadow);min-width:0;transition:border-color .2s}
 .rcard.sel{border-color:var(--teal)}
@@ -216,7 +194,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .confirm .ic.big{width:30px;height:30px;color:var(--ok)}
 .code{font:600 .9rem var(--f-mono)}
 
-/* ---------- Мероприятия ---------- */
+/* Мероприятия */
 .agrid{display:grid;gap:14px;grid-template-columns:1fr}
 .acard h3{font:700 1.1rem/1.25 var(--f-disp)}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
@@ -229,7 +207,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .slot.mine small{color:inherit}
 .agebar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
 
-/* ---------- Каюта ---------- */
+/* Каюта */
 .cgrid{display:grid;gap:18px;grid-template-columns:1fr}
 .dgrid{display:grid;gap:14px;grid-template-columns:1fr}
 .dev{display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:16px;border:1px solid var(--line);background:var(--bg);min-width:0}
@@ -239,7 +217,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .ok-t{color:var(--ok);font-weight:700}
 .base-r{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;font-size:.9rem;color:var(--muted)}
 
-/* ---------- Еда ---------- */
+/* Еда */
 .food{display:grid;gap:18px;grid-template-columns:1fr}
 .item{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:14px 0;border-top:1px solid var(--line)}
 .item:first-child{border-top:0}
@@ -253,8 +231,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .cl .n{font-weight:600;min-width:0}
 .tot{display:flex;justify-content:space-between;align-items:baseline;font-weight:800}
 .tot .price{font-size:1.25rem}
-.cartbar{position:fixed;z-index:15;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));
-  display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:52px;padding:10px 18px;border-radius:99px;border:0;background:var(--sand);color:#0B2545;font-weight:800;box-shadow:0 8px 24px -8px rgba(0,0,0,.45)}
+.cartbar{position:fixed;z-index:15;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:52px;padding:10px 18px;border-radius:99px;border:0;background:var(--sand);color:#0B2545;font-weight:800;box-shadow:0 8px 24px -8px rgba(0,0,0,.45)}
 .steps{list-style:none;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
 .steps li{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:.72rem;font-weight:600;color:var(--muted)}
 .steps li::before{content:"";position:absolute;top:14px;right:50%;width:100%;height:2px;background:var(--line)}
@@ -269,14 +246,14 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .order:first-child{border-top:0;padding-top:0}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(233,196,106,.6)}50%{box-shadow:0 0 0 7px rgba(233,196,106,0)}}
 
-/* ---------- Toast ---------- */
+/* Toast */
 .toasts{position:fixed;z-index:40;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 70px);width:min(92vw,420px);display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .toast{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:14px;background:var(--navy);color:#fff;font-weight:600;box-shadow:0 10px 30px -10px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.18);opacity:0;transform:translateY(-8px);transition:opacity .25s,transform .25s}
 .toast.in{opacity:1;transform:none}
 .toast .ic{color:var(--sand)}
 .toast.warn .ic{color:#FFB4A9}
 
-/* ---------- Авторизация и кнопка «Выйти» ---------- */
+/* Авторизация */
 .cabin-chip{display:none}
 .out{display:inline-flex;align-items:center;gap:8px;min-height:44px;min-width:44px;justify-content:center;padding:8px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.28);background:transparent;color:#fff;font-weight:700;font-size:.85rem}
 .out .t{display:none}
@@ -296,6 +273,14 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 .or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.8rem}
 .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
 .auth-note{font-size:.8rem;color:var(--muted)}
+
+/* ЖЕСТКОЕ ПЕРЕКРЫТИЕ ДЛЯ ЭКРАНА ВХОДА */
+#auth[hidden]{display:none !important;}
+#auth:not([hidden]){
+  position:fixed !important; inset:0 !important; z-index:9999 !important; 
+  overflow-y:auto !important; width:100% !important; height:100% !important;
+}
+body.auth-active #topbar, body.auth-active #main { display:none !important; }
 
 @media (min-width:560px){
   .mini{display:flex}
@@ -326,6 +311,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 @media (max-width:899px){.cartcol{display:flex;flex-direction:column;gap:18px}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 </style>
+</head>
+<body>
 
 <header class="top" id="topbar" hidden>
   <div class="in top-in">
@@ -351,14 +338,6 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
 
 <script>
 'use strict';
-/* =========================================================
-   «Личный кабинет гостя» — прототип. Чистый JS, без библиотек.
-   Модули (секции ниже): utils → data → state → timers → climate →
-   devices → booking → events → food → ui.
-   Допущения помечены комментариями «ДОПУЩЕНИЕ».
-   ========================================================= */
-
-/* ================= 0. UTILS ================= */
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const pad = n => String(n).padStart(2, '0');
@@ -367,7 +346,7 @@ const dkey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate()
 const atTime = (key, t) => { const [y, m, d] = key.split('-').map(Number); const [h, mi] = t.split(':').map(Number); return new Date(y, m - 1, d, h, mi, 0, 0).getTime(); };
 const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
-const rub = n => n.toLocaleString('ru-RU') + ' ₽';           // ДОПУЩЕНИЕ: цены в рублях, оплата на счёт каюты
+const rub = n => n.toLocaleString('ru-RU') + ' ₽';
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const hash = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
 const plural = (n, f) => { const m = Math.abs(n) % 100, k = m % 10; if (m > 10 && m < 20) return f[2]; if (k > 1 && k < 5) return f[1]; if (k === 1) return f[0]; return f[2]; };
@@ -400,12 +379,7 @@ const ICON = {
 };
 const icon = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICON[n] || ''}</svg>`;
 
-/* ================= 1. DATA (mock) ================= */
-// ДОПУЩЕНИЕ: гость, каюта и время — демо-данные; «бортовое время» = время устройства.
-// Заполняется при входе из профиля пользователя (см. enter()).
 const CABIN = { number: '', deck: null, guest: '' };
-
-// Схема зала: 12 столиков, число мест у каждого (общая для всех ресторанов).
 const SEATS = [2, 2, 2, 2, 4, 4, 4, 4, 6, 6, 2, 4];
 const RESTAURANTS = [
   { id: 'horizon', name: 'Горизонт', cuisine: 'Европейская кухня, завтраки', open: '07:00', close: '22:30', deck: 5, tone: 't1', ic: 'dining' },
@@ -413,15 +387,13 @@ const RESTAURANTS = [
   { id: 'sakura', name: 'Сакура', cuisine: 'Японская кухня, суши-бар', open: '17:00', close: '23:30', deck: 7, tone: 't3', ic: 'star' },
   { id: 'riviera', name: 'Ривьера', cuisine: 'Средиземноморская кухня, терраса', open: '08:00', close: '21:30', deck: 9, tone: 't4', ic: 'sun' }
 ];
-const BOOKING_MINUTES = 90;   // ДОПУЩЕНИЕ: бронь длится 90 минут, последний слот = закрытие − 90 мин
-
+const BOOKING_MINUTES = 90;
 const CATS = [
   { id: 'pool', label: 'Бассейн', ic: 'wave' },
   { id: 'kids', label: 'Детские комнаты', ic: 'users' },
   { id: 'spa', label: 'Спа', ic: 'drop' },
   { id: 'fun', label: 'Развлечения', ic: 'star' }
 ];
-// minAge/maxAge — возрастные ограничения, cap — вместимость одного сеанса.
 const ACTIVITIES = [
   { id: 'swim', cat: 'pool', title: 'Утренний заплыв', place: 'Открытый бассейн, палуба 12', desc: 'Три дорожки по 25 метров, дежурный тренер.', minAge: 14, maxAge: 99, cap: 20, times: ['07:00', '08:00', '09:00'] },
   { id: 'aqua', cat: 'pool', title: 'Аквааэробика', place: 'Открытый бассейн, палуба 12', desc: 'Групповое занятие под музыку, 45 минут.', minAge: 16, maxAge: 99, cap: 15, times: ['10:30', '15:00'] },
@@ -437,12 +409,10 @@ const ACTIVITIES = [
   { id: 'cinema', cat: 'fun', title: 'Кино под звёздами', place: 'Верхняя палуба 13', desc: 'Семейный фильм на большом экране.', minAge: 6, maxAge: 99, cap: 50, times: ['21:30'] },
   { id: 'cocktail', cat: 'fun', title: 'Мастер-класс по коктейлям', place: 'Бар «Компас», палуба 6', desc: 'Три авторских коктейля с бармен-шефом.', minAge: 18, maxAge: 99, cap: 16, times: ['17:30'] }
 ];
-
 const FOOD_CATS = [
   { id: 'breakfast', label: 'Завтрак' }, { id: 'lunch', label: 'Обед' },
   { id: 'dinner', label: 'Ужин' }, { id: 'drinks', label: 'Напитки' }
 ];
-// ДОПУЩЕНИЕ: меню доступно круглосуточно, без ограничений по времени суток.
 const MENU = {
   breakfast: [
     { id: 'b1', name: 'Омлет с лососем и укропом', desc: 'Три яйца, слабосолёный лосось', price: 540 },
@@ -478,9 +448,6 @@ const MENU = {
   ]
 };
 const ALL_ITEMS = [].concat(...Object.values(MENU));
-
-// Умная техника. heat — время нагрева в мс.
-// ДОПУЩЕНИЕ: время нагрева и этапы заказа УСКОРЕНЫ для демо (секунды вместо минут).
 const DEVICES = [
   { id: 'kettle', name: 'Чайник', ic: 'kettle', autoOpts: [3, 5, 10], heat: { 60: 15000, 80: 30000, 100: 45000 } },
   { id: 'coffee', name: 'Кофемашина', ic: 'coffee', autoOpts: [5, 10, 20], heat: 20000 },
@@ -488,79 +455,67 @@ const DEVICES = [
 ];
 const SCENES = { day: { label: 'День', level: 100 }, evening: { label: 'Вечер', level: 60 }, night: { label: 'Ночь', level: 15 }, cinema: { label: 'Кино', level: 25 } };
 const STEP = { light: 5, temp: 1, hum: 5 };
-
-// Этапы заказа (мс, демо-ускорение): принят → готовится → в пути → доставлен
 const ORDER_STAGES = ['Принят', 'Готовится', 'В пути', 'Доставлен'];
 const STAGE_MS = [10000, 40000, 30000];
 const ORDER_TOTAL = STAGE_MS.reduce((a, b) => a + b, 0);
 const STAGE_TOAST = [null, 'Заказ готовится', 'Заказ в пути', 'Заказ доставлен. Приятного аппетита!'];
-
 const REST = id => RESTAURANTS.find(r => r.id === id);
 const ACT = id => ACTIVITIES.find(a => a.id === id);
 
-/* ================= 2. STATE ================= */
-// Ключи localStorage. Данные каждого гостя хранятся отдельно: STORE_PREFIX + email.
-const USERS_KEY = 'ship-guest-users-v1';        // массив пользователей {name, email, password, cabin}
-const SESSION_KEY = 'ship-guest-session-v1';    // email текущего пользователя
-const STORE_PREFIX = 'ship-guest-cabin-v1:';    // состояние приложения конкретного гостя
-const LEGACY_KEY = 'ship-guest-cabin-v1';       // данные до появления авторизации (достаются первому вошедшему гостю)
+const USERS_KEY = 'ship-guest-users-v1';
+const SESSION_KEY = 'ship-guest-session-v1';
+const STORE_PREFIX = 'ship-guest-cabin-v1:';
+const LEGACY_KEY = 'ship-guest-cabin-v1';
 const defaults = () => ({
   view: 'dashboard',
   climate: { light: { on: true, level: 60, scene: 'evening' }, temp: 22, hum: 45, base: { temp: 22, hum: 45 } },
-  timers: {},        // key ('light'|'temp'|'hum'|'dev:<id>') → { endsAt, startedAt }
+  timers: {},
   devices: {
     kettle: { status: 'off', target: 80, autoOff: 5, heatStartedAt: 0, heatDoneAt: 0 },
     coffee: { status: 'off', autoOff: 10, heatStartedAt: 0, heatDoneAt: 0 },
     tv: { status: 'off', autoOff: 0, heatStartedAt: 0, heatDoneAt: 0 }
   },
-  bookings: [],      // {id, restId, date, time, guests, table, startTs, code}
+  bookings: [],
   lastConfirm: null,
-  signups: [],       // {id:'actId|date|time', actId, dayKey, time, startTs, age}
-  cart: {},          // itemId → qty
-  orders: [],        // {id, items, total, createdAt, deliverAt, asap, t0, stage}
+  signups: [],
+  cart: {},
+  orders: [],
   seq: 1
 });
 const isObj = v => v && typeof v === 'object' && !Array.isArray(v);
 const merge = (base, over) => { if (!isObj(over)) return base; for (const k of Object.keys(base)) { if (!(k in over)) continue; base[k] = isObj(base[k]) && isObj(over[k]) && !['timers', 'cart'].includes(k) ? merge(base[k], over[k]) : over[k]; } return base; };
-let state = null;      // состояние текущего гостя; null, пока никто не вошёл
-let userKey = null;    // ключ localStorage текущего гостя
+let state = null;
+let userKey = null;
 const loadUser = () => {
   try {
     let raw = localStorage.getItem(userKey);
     if (!raw) { const old = localStorage.getItem(LEGACY_KEY); if (old) { raw = old; localStorage.removeItem(LEGACY_KEY); } }
     if (raw) return merge(defaults(), JSON.parse(raw));
-  } catch (e) { /* хранилище недоступно — работаем в памяти */ }
+  } catch (e) { }
   return defaults();
 };
-const save = () => { if (!state || !userKey) return; try { localStorage.setItem(userKey, JSON.stringify(state)); } catch (e) { /* ignore */ } };
+const save = () => { if (!state || !userKey) return; try { localStorage.setItem(userKey, JSON.stringify(state)); } catch (e) { } };
 const nextId = p => p + (state.seq++);
 const codeFor = (p, id) => `${p}-${1000 + hash(id) % 9000}`;
 
-// Состояние интерфейса (не сохраняется): выбранные поля форм.
 const freshUI = () => ({
   book: { restId: 'horizon', date: dkey(new Date()), time: null, guests: 2, table: null },
   evCat: 'pool', evDay: 0, age: 30,
   foodCat: 'breakfast', deliver: 'asap',
   pick: {}
 });
-const ui = freshUI();   // сбрасывается при входе и выходе
+const ui = freshUI();
 
-/* ================= 3. TIMERS ================= */
-// Реестр таймеров: ключ → {endsAt, startedAt}; хранится в state.timers (переживает перезагрузку).
-// По истечении вызывается обработчик из Timers.handlers[key].
 const Timers = {
   handlers: {},
   start(key, endsAt) { state.timers[key] = { endsAt, startedAt: Date.now() }; save(); },
   cancel(key) { delete state.timers[key]; save(); },
-  // Переиспользуемый компонент «таймер»: бейдж с обратным отсчётом (+ полоса прогресса).
-  // Тик раз в секунду обновляет все элементы .cd по data-end.
   badge(endsAt, startedAt, o = {}) {
     const total = Math.max(1, endsAt - startedAt);
     const rem = endsAt - Date.now();
     return `<span class="cdw"><span class="cd" data-end="${endsAt}" data-total="${total}" data-zero="${o.zero || '00:00'}">${icon('clock')}${o.label ? `<span class="cd-l">${o.label}</span>` : ''}<time class="cd-t">${rem > 0 ? fmtDur(rem) : (o.zero || '00:00')}</time></span>${o.bar ? `<span class="cd-bar"><i style="width:${clamp(100 * (1 - rem / total), 0, 100)}%"></i></span>` : ''}</span>`;
   }
 };
-// Выбор времени: «через N минут» или конкретное ЧЧ:ММ
 const pickState = key => ui.pick[key] || (ui.pick[key] = { mode: 'after', minutes: 30, time: '23:00' });
 function pickerEnd(key) {
   const p = pickState(key), now = Date.now();
@@ -572,7 +527,7 @@ function pickerEnd(key) {
   const [h, mi] = String(p.time || '').split(':').map(Number);
   if (isNaN(h) || isNaN(mi)) return { error: 'Укажите время в формате ЧЧ:ММ' };
   const d = new Date(); d.setHours(h, mi, 0, 0);
-  if (d.getTime() <= now + 30000) d.setDate(d.getDate() + 1);   // время уже прошло — берём завтра
+  if (d.getTime() <= now + 30000) d.setDate(d.getDate() + 1);
   return { endsAt: d.getTime() };
 }
 function pickerHTML(key) {
@@ -603,7 +558,6 @@ function timerBlock(key, hint) {
   return `<div class="lbl">Таймер отключения</div><div class="tactive"><div><div class="tactive-t">${timerTitle(key)} в ${hhmm(new Date(t.endsAt))}</div>${Timers.badge(t.endsAt, t.startedAt, { label: 'осталось', bar: true })}</div><button type="button" class="btn ghost sm" data-act="timer-cancel" data-key="${key}">Отменить таймер</button></div>`;
 }
 
-/* ================= 4. CLIMATE ================= */
 const sceneFor = level => Object.keys(SCENES).find(k => SCENES[k].level === level) || null;
 function statusVal(k) {
   const c = state.climate;
@@ -617,7 +571,6 @@ function meterVal(k) {
   if (k === 'hum') return (c.hum - 30) / 40 * 100;
   return c.light.on ? c.light.level : 0;
 }
-// Статус-бар (дашборд + мини-панель в шапке) обновляется сразу при любом изменении.
 function updateStatus() {
   $$('[data-status]').forEach(el => { el.textContent = statusVal(el.dataset.status); });
   $$('[data-meter]').forEach(el => el.style.setProperty('--m', meterVal(el.dataset.meter)));
@@ -664,7 +617,6 @@ function climateCard(key) {
   </section>`;
 }
 
-/* ================= 5. DEVICES ================= */
 const heatMs = d => d.id === 'kettle' ? d.heat[state.devices.kettle.target] : d.heat;
 function deviceOn(id) {
   const d = DEVICES.find(x => x.id === id), s = state.devices[id], now = Date.now();
@@ -697,19 +649,16 @@ function deviceCard(d) {
   }
   return `<div class="dev"><div class="dev-h"><b>${icon(d.ic)}${d.name}</b>${pill}</div>${body}</div>`;
 }
-// kettle target: data-id не нужен, но добавим для единообразия фокуса
 function devicesCard() {
   return `<section class="card wide" aria-labelledby="h-dev"><div class="card-h"><div class="t">${icon('power')}<h2 id="h-dev">Умная техника</h2></div></div><div class="dgrid">${DEVICES.map(deviceCard).join('')}</div></section>`;
 }
 
-/* ================= 6. BOOKING (рестораны) ================= */
 const activeBookings = () => state.bookings.filter(b => b.startTs + BOOKING_MINUTES * 60000 > Date.now()).sort((a, b) => a.startTs - b.startTs);
 function timeSlots(r, dateKey) {
   const out = [], lo = toMin(r.open), hi = toMin(r.close) - BOOKING_MINUTES, now = Date.now();
   for (let m = lo; m <= hi; m += 30) { const t = `${pad(Math.floor(m / 60))}:${pad(m % 60)}`; if (atTime(dateKey, t) > now + 15 * 60000) out.push(t); }
   return out;
 }
-// Занятость столиков — детерминированный mock + собственные брони гостя.
 function tableInfo(r, date, time, i, guests) {
   const mine = state.bookings.some(x => x.restId === r.id && x.date === date && x.time === time && x.table === i + 1);
   const busy = mine || hash(`${r.id}|${date}|${time}|${i}`) % 100 < 38;
@@ -773,7 +722,6 @@ function viewRestaurants() {
   </div>`;
 }
 
-/* ================= 7. EVENTS (мероприятия) ================= */
 const activeSignups = () => state.signups.filter(s => s.startTs + 60 * 60000 > Date.now()).sort((a, b) => a.startTs - b.startTs);
 const ageText = a => a.maxAge < 99 ? `${a.minAge}–${a.maxAge} лет` : a.minAge > 0 ? `от ${a.minAge} лет` : 'Любой возраст';
 function takenFor(a, dayKey, time) { const h = hash(`${a.id}|${dayKey}|${time}`) % 100; return h < 18 ? a.cap : Math.floor(a.cap * (h % 70) / 100); }
@@ -810,7 +758,6 @@ function viewEvents() {
   </div>`;
 }
 
-/* ================= 8. FOOD (доставка еды) ================= */
 const cartItems = () => Object.entries(state.cart).map(([id, q]) => { const it = ALL_ITEMS.find(x => x.id === id); return it ? { id, name: it.name, price: it.price, qty: q } : null; }).filter(Boolean);
 const cartTotal = () => cartItems().reduce((s, i) => s + i.price * i.qty, 0);
 const cartCount = () => cartItems().reduce((s, i) => s + i.qty, 0);
@@ -858,7 +805,6 @@ function viewFood() {
   </div>`;
 }
 
-/* ================= 9. UI: toast, views, события ================= */
 function toast(msg, kind = 'ok') {
   const box = $('#toasts'), el = document.createElement('div');
   el.className = 'toast ' + (kind === 'warn' ? 'warn' : '');
@@ -917,7 +863,6 @@ function viewCabin() {
 }
 const VIEWS = { dashboard: viewDashboard, restaurants: viewRestaurants, events: viewEvents, cabin: viewCabin, food: viewFood };
 
-// Фокус не должен теряться при перерисовке
 const focusKey = el => { const d = el.dataset; return JSON.stringify([d.act, d.id, d.key, d.time, d.v, d.slot, d.cat, d.day, d.mode, d.min, d.scene, d.d, d.view]); };
 function render() {
   if (!state) return;
@@ -945,10 +890,9 @@ function updateCountdowns(now) {
   });
 }
 
-// Главный тик (1 с): срабатывание таймеров, нагрев техники, этапы заказов, устаревшие брони.
 let lastSig = null;
 function tick() {
-  if (!state) return;                     // никто не вошёл — таймеры не идут
+  if (!state) return;
   const now = Date.now(); let changed = false;
   for (const key of Object.keys(state.timers)) {
     if (state.timers[key].endsAt <= now) { delete state.timers[key]; const h = Timers.handlers[key]; if (h) h(); changed = true; }
@@ -966,15 +910,11 @@ function tick() {
   updateClock();
 }
 
-/* ---------- Действия (делегирование кликов) ---------- */
-// Обработчик возвращает false, если перерисовка не нужна.
 const ACTIONS = {
   nav(el) { state.view = el.dataset.view; render(); window.scrollTo(0, 0); const h = $('#view h1'); if (h) h.focus({ preventScroll: true }); return false; },
-  // авторизация
   logout() { logout(); return false; },
   'auth-mode'(el) { authUI.mode = el.dataset.mode; renderAuth(); const f = $('#au-email'); if (f) f.focus({ preventScroll: true }); return false; },
   'demo-login'() { demoLogin(); return false; },
-  // рестораны
   'rest-select'(el) { ui.book.restId = el.dataset.id; ui.book.time = null; ui.book.table = null; },
   'bk-time'(el) { ui.book.time = el.dataset.time; ui.book.table = null; },
   'bk-guests'(el) { const b = ui.book; b.guests = clamp(b.guests + Number(el.dataset.d), 1, 8); if (b.table && SEATS[b.table - 1] < b.guests) b.table = null; },
@@ -994,7 +934,6 @@ const ACTIONS = {
   },
   'bk-cancel'(el) { const id = el.dataset.id; state.bookings = state.bookings.filter(x => x.id !== id); if (state.lastConfirm === id) state.lastConfirm = null; toast('Бронь отменена', 'info'); },
   'dismiss-confirm'() { state.lastConfirm = null; },
-  // мероприятия
   'ev-cat'(el) { ui.evCat = el.dataset.cat; },
   'ev-day'(el) { ui.evDay = Number(el.dataset.day); },
   age(el) { ui.age = clamp(ui.age + Number(el.dataset.d), 0, 99); },
@@ -1008,7 +947,6 @@ const ACTIONS = {
     toast(`Запись подтверждена: ${a.title}, ${time}`);
   },
   'ev-cancel'(el) { state.signups = state.signups.filter(s => s.id !== el.dataset.id); toast('Запись отменена', 'info'); },
-  // каюта
   'light-toggle'() { const l = state.climate.light; l.on = !l.on; if (l.on && l.level === 0) setClimate('light', 50); toast(l.on ? 'Свет включён' : 'Свет выключен', 'info'); },
   scene(el) { const l = state.climate.light, k = el.dataset.scene; l.level = SCENES[k].level; l.scene = k; l.on = true; toast(`Сценарий «${SCENES[k].label}»`, 'info'); },
   step(el) { const k = el.dataset.key, c = state.climate; setClimate(k, (k === 'light' ? c.light.level : c[k]) + Number(el.dataset.d) * STEP[k]); },
@@ -1028,7 +966,6 @@ const ACTIONS = {
   'dev-auto'(el) { state.devices[el.dataset.id].autoOff = Number(el.dataset.v); },
   'dev-on'(el) { deviceOn(el.dataset.id); },
   'dev-off'(el) { deviceOff(el.dataset.id); },
-  // еда
   'food-cat'(el) { ui.foodCat = el.dataset.cat; },
   'cart-add'(el) { const id = el.dataset.id; state.cart[id] = (state.cart[id] || 0) + 1; },
   'cart-sub'(el) { const id = el.dataset.id; if (!state.cart[id]) return; state.cart[id]--; if (state.cart[id] <= 0) delete state.cart[id]; },
@@ -1050,7 +987,6 @@ const ACTIONS = {
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]');
   if (!el || el.disabled) return;
-  // Двухшаговое подтверждение (confirm() в артефакте недоступен)
   if (el.dataset.confirm && !el.classList.contains('armed')) {
     el.classList.add('armed'); el._label = el.textContent; el.textContent = 'Точно отменить?';
     clearTimeout(el._t); el._t = setTimeout(() => { el.classList.remove('armed'); el.textContent = el._label; }, 3500);
@@ -1063,7 +999,6 @@ document.addEventListener('click', e => {
   if (res !== false) render();
 });
 
-// Ползунки: обновляем состояние и статус-бар на лету, без перерисовки
 document.addEventListener('input', e => {
   const t = e.target;
   if (t.matches('input[type=range][data-range]')) {
@@ -1084,9 +1019,6 @@ document.addEventListener('change', e => {
   } else if (t.dataset.food === 'deliver') { ui.deliver = t.value; }
 });
 
-/* ================= 9b. AUTH (регистрация, вход, сессия) ================= */
-// ДОПУЩЕНИЕ: это прототип без сервера. Пользователи и пароли лежат в localStorage
-// браузера в открытом виде, как задано в ТЗ. В продакшене нужен бэкенд и хэширование паролей.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DEMO = { name: 'Анна Морозова', email: 'demo@ship.local', password: 'demo123', cabin: '7214' };
 const SHIP_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 16l2.5 4h15L22 16z"/><path d="M6 16v-5h12v5"/><path d="M10 11V7h4v4"/><path d="M12 4v3"/></svg>';
@@ -1094,16 +1026,21 @@ const authUI = { mode: 'login', email: '' };
 const normEmail = s => String(s || '').trim().toLowerCase();
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
-let memUsers = null, memSession = null;   // запасной вариант, если localStorage недоступен
-const readUsers = () => { try { const a = JSON.parse(localStorage.getItem(USERS_KEY)); if (Array.isArray(a)) return a; } catch (e) { /* ignore */ } return memUsers || []; };
-const writeUsers = a => { memUsers = a; try { localStorage.setItem(USERS_KEY, JSON.stringify(a)); } catch (e) { /* ignore */ } };
-const getSession = () => { try { const s = localStorage.getItem(SESSION_KEY); if (s) return s; } catch (e) { /* ignore */ } return memSession;};
-const setSession = email => { memSession = email; try { localStorage.setItem(SESSION_KEY, email); } catch (e) { /* ignore */ } };
-const clearSession = () => { memSession = null; try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* ignore */ } };
-// Палуба — по номеру каюты: 7214 → 7, 305 → 3; если номер нечисловой, палубу не показываем.
+let memUsers = null, memSession = null;
+const readUsers = () => { try { const a = JSON.parse(localStorage.getItem(USERS_KEY)); if (Array.isArray(a)) return a; } catch (e) { } return memUsers || []; };
+const writeUsers = a => { memUsers = a; try { localStorage.setItem(USERS_KEY, JSON.stringify(a)); } catch (e) { } };
+const getSession = () => { try { const s = localStorage.getItem(SESSION_KEY); if (s) return s; } catch (e) { } return memSession;};
+const setSession = email => { memSession = email; try { localStorage.setItem(SESSION_KEY, email); } catch (e) { } };
+const clearSession = () => { memSession = null; try { localStorage.removeItem(SESSION_KEY); } catch (e) { } };
 const deckOf = c => { const n = parseInt(c, 10); if (isNaN(n)) return null; if (n >= 1000) return Math.floor(n / 1000); if (n >= 100) return Math.floor(n / 100); return null; };
 
-function showApp(on) { $('#topbar').hidden = !on; $('#main').hidden = !on; $('#auth').hidden = on; }
+function showApp(on) {
+  $('#topbar').hidden = !on;
+  $('#main').hidden = !on;
+  $('#auth').hidden = on;
+  document.body.classList.toggle('auth-active', !on);
+}
+
 function enter(u) {
   Object.assign(CABIN, { number: u.cabin, deck: deckOf(u.cabin), guest: esc(String(u.name).split(' ')[0]) });
   userKey = STORE_PREFIX + u.email;
@@ -1114,7 +1051,7 @@ function enter(u) {
   $('#cabinChip').textContent = `Каюта ${CABIN.number}`;
   showApp(true);
   render();
-  tick();                                 // применяем таймеры, истёкшие пока гость был не в системе
+  tick();
   window.scrollTo(0, 0);
   const h = $('#view h1'); if (h) h.focus({ preventScroll: true });
 }
@@ -1186,13 +1123,13 @@ function submitAuth() {
 }
 document.addEventListener('submit', e => { if (e.target.id === 'auth-form') { e.preventDefault(); submitAuth(); } });
 
-/* ================= 10. INIT ================= */
 $('#tabs').innerHTML = TABS.map(t => `<button type="button" class="tab" data-act="nav" data-view="${t.v}">${icon(t.ic)}<span class="l-s">${t.s}</span><span class="l-l">${t.l}</span></button>`).join('');
-// Старт: если есть сессия и такой пользователь существует — входим, иначе показываем экран авторизации.
 {
   const em = getSession(), u = em && readUsers().find(x => x.email === em);
   if (u) enter(u); else { if (em) clearSession(); showApp(false); renderAuth(); }
-}                                   // сразу применяем таймеры, истёкшие пока страница была закрыта
+}
 setInterval(tick, 1000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
 </script>
+</body>
+</html>
