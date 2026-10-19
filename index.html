@@ -464,7 +464,9 @@ const MENU = {
     { id: 'l3', name: 'Паста с морепродуктами', desc: 'Креветки, мидии, кальмар', price: 790 },
     { id: 'l4', name: 'Дорадо с овощами', desc: 'Запечённая на гриле', price: 980 },
     { id: 'l5', name: 'Бургер «Капитан»', desc: 'Говядина, чеддер, картофель', price: 690 },
-    { id: 'l6', name: 'Крем-суп из тыквы', desc: 'Сливки, тыквенные семечки', price: 390 }
+    { id: 'l6', name: 'Крем-суп из тыквы', desc: 'Сливки, тыквенные семечки', price: 390 },
+    { id: 's1', name: 'Мисо-суп', desc: 'Тофу, вакамэ, зелёный лук', price: 290, r: ['sakura'] },
+    { id: 's2', name: 'Рамен с курицей', desc: 'Яйцо, нори, кукуруза', price: 640, r: ['sakura'] }
   ],
   dinner: [
     { id: 'd1', name: 'Филе-миньон', desc: 'Картофельное пюре, соус демиглас', price: 1890 },
@@ -472,7 +474,10 @@ const MENU = {
     { id: 'd3', name: 'Ризотто с белыми грибами', desc: 'Пармезан, трюфельное масло', price: 920 },
     { id: 'd4', name: 'Утиная грудка', desc: 'Вишнёвый соус, батат', price: 1390 },
     { id: 'd5', name: 'Тартар из тунца', desc: 'Авокадо, кунжут', price: 1100 },
-    { id: 'd6', name: 'Тирамису', desc: 'Классический рецепт', price: 450 }
+    { id: 'd6', name: 'Тирамису', desc: 'Классический рецепт', price: 450 },
+    { id: 's3', name: 'Ролл «Филадельфия»', desc: '8 штук, лосось, сливочный сыр', price: 790, r: ['sakura'] },
+    { id: 's4', name: 'Сашими из лосося', desc: '8 ломтиков, васаби, имбирь', price: 920, r: ['sakura'] },
+    { id: 's5', name: 'Моти с зелёным чаем', desc: '3 штуки', price: 380, r: ['sakura'] }
   ],
   drinks: [
     { id: 'k1', name: 'Американо', desc: '200 мл', price: 180 },
@@ -480,9 +485,20 @@ const MENU = {
     { id: 'k3', name: 'Чайник чая', desc: 'Чёрный, зелёный или травяной', price: 160 },
     { id: 'k4', name: 'Апельсиновый сок', desc: 'Свежевыжатый, 300 мл', price: 280 },
     { id: 'k5', name: 'Лимонад «Морской бриз»', desc: 'Мята, лайм, содовая', price: 260 },
-    { id: 'k6', name: 'Минеральная вода', desc: '0,5 л', price: 120 }
+    { id: 'k6', name: 'Минеральная вода', desc: '0,5 л', price: 120 },
+    { id: 'k7', name: 'Чай матча', desc: 'Горячий, 250 мл', price: 240, r: ['sakura'] }
   ]
 };
+// Какие блюда готовит какой ресторан (нет поля r — доступно везде)
+const MENU_REST = {
+  b1: ['horizon', 'riviera'], b2: ['horizon'], b3: ['horizon', 'riviera'], b4: ['horizon', 'riviera'], b5: ['horizon', 'riviera'], b6: ['horizon', 'riviera'],
+  l1: ['horizon', 'neptune'], l2: ['horizon', 'riviera'], l3: ['neptune', 'riviera'], l4: ['neptune', 'riviera'], l5: ['horizon'], l6: ['horizon', 'riviera'],
+  d1: ['horizon'], d2: ['horizon', 'neptune', 'riviera'], d3: ['horizon', 'riviera'], d4: ['horizon'], d5: ['neptune', 'sakura'], d6: ['horizon', 'riviera']
+};
+Object.values(MENU).forEach(a => a.forEach(i => { if (MENU_REST[i.id]) i.r = MENU_REST[i.id]; }));
+const menuFor = (rid, cat) => MENU[cat].filter(i => !i.r || i.r.includes(rid));
+const foodCatsFor = rid => FOOD_CATS.filter(c => menuFor(rid, c.id).length);
+const availableAt = (rid, itemId) => { const it = ALL_ITEMS.find(x => x.id === itemId); return !!it && (!it.r || it.r.includes(rid)); };
 const ALL_ITEMS = [].concat(...Object.values(MENU));
 const DEVICES = [
   { id: 'kettle', name: 'Чайник', ic: 'kettle', autoOpts: [3, 5, 10], heat: { 60: 15000, 80: 30000, 100: 45000 } },
@@ -521,6 +537,10 @@ const jget = (k, fallback) => { try { const v = JSON.parse(lsGet(k)); return v =
 // db_activities — общая база записей: { id, actId, dayKey, time, guestName, cabin, startTs }
 const getGlobalActs = () => { const a = jget(ACT_KEY, []); return Array.isArray(a) ? a : []; };
 const saveGlobalActs = arr => lsSet(ACT_KEY, JSON.stringify(arr));
+// db_orders — заказы еды: { id, code, restId, items, total, cabin, guestName, createdAt, deliverAt, t0 }
+const ORDERS_KEY = 'db_orders';
+const getGlobalOrders = () => { const a = jget(ORDERS_KEY, []); return Array.isArray(a) ? a : []; };
+const saveGlobalOrders = arr => lsSet(ORDERS_KEY, JSON.stringify(arr));
 const ACT_MS = 60 * 60000; // запись «живёт» час после начала сеанса
 const activeAct = x => x.startTs + ACT_MS > Date.now();
 // Консольный сброс: resetDB()
@@ -583,7 +603,7 @@ const saveTables = (rid, arr) => {
 const freshUI = () => ({
   book: { restId: 'horizon', date: dkey(new Date()), time: null, guests: 2, table: null },
   evCat: 'pool', evDay: 0, age: 30,
-  foodCat: 'breakfast', deliver: 'asap',
+  foodCat: 'breakfast', deliver: 'asap', foodRest: 'horizon',
   pick: {}, armed: null
 });
 const ui = freshUI();
@@ -857,9 +877,11 @@ function viewEvents() {
 const cartItems = () => Object.entries(state.cart).map(([id, q]) => { const it = ALL_ITEMS.find(x => x.id === id); return it ? { id, name: it.name, price: it.price, qty: q } : null; }).filter(Boolean);
 const cartTotal = () => cartItems().reduce((s, i) => s + i.price * i.qty, 0);
 const cartCount = () => cartItems().reduce((s, i) => s + i.qty, 0);
-function deliverySlots() {
+// Доставка работает так же, как сам ресторан: только в часы его работы
+const restOpenAt = (r, ts) => { const d = new Date(ts), m = d.getHours() * 60 + d.getMinutes(); return m >= toMin(r.open) && m <= toMin(r.close); };
+function deliverySlots(r) {
   const out = [], d = new Date(Date.now() + 30 * 60000); d.setSeconds(0, 0); d.setMinutes(Math.ceil(d.getMinutes() / 15) * 15);
-  for (let i = 0; i < 8; i++) { out.push(d.getTime()); d.setMinutes(d.getMinutes() + 15); }
+  for (let i = 0; i < 96 && out.length < 8; i++) { if (restOpenAt(r, d.getTime())) out.push(d.getTime()); d.setMinutes(d.getMinutes() + 15); }
   return out;
 }
 const stageOf = (o, now) => { const e = now - o.t0; if (e < STAGE_MS[0]) return 0; if (e < STAGE_MS[0] + STAGE_MS[1]) return 1; if (e < ORDER_TOTAL) return 2; return 3; };
@@ -869,20 +891,25 @@ function stepperHTML(stage) {
 function orderRow(o) {
   const names = o.items.map(i => `${i.name} × ${i.qty}`).join(', ');
   const wait = o.stage === 0 && o.t0 > Date.now();
-  return `<div class="order"><div class="row" style="padding:0;border:0"><div><div class="rt">Заказ ${o.code || ''}</div><div class="rs">${names}</div></div><span class="price">${rub(o.total)}</span></div>
+  return `<div class="order"><div class="row" style="padding:0;border:0"><div><div class="rt">Заказ ${o.code || ''}${o.restId && REST(o.restId) ? ' · ' + REST(o.restId).name : ''}</div><div class="rs">${names}</div></div><span class="price">${rub(o.total)}</span></div>
     ${stepperHTML(o.stage)}
     ${o.stage < 3 ? `<div>${Timers.badge(o.deliverAt, o.createdAt, { label: o.asap ? 'доставим через' : `к ${hhmm(new Date(o.deliverAt))}, осталось`, bar: true })}</div>${wait ? `<p class="muted" style="font-size:.85rem">Начнём готовить в ${hhmm(new Date(o.t0))}.</p>` : ''}` : `<p class="ok-t">Доставлен в ${hhmm(new Date(o.deliverAt))}</p>`}</div>`;
 }
 function viewFood() {
-  const items = MENU[ui.foodCat], cart = cartItems(), total = cartTotal(), slots = deliverySlots();
-  if (ui.deliver !== 'asap' && !slots.includes(Number(ui.deliver))) ui.deliver = 'asap';
+  const cats = foodCatsFor(ui.foodRest);
+  if (!cats.some(c => c.id === ui.foodCat)) ui.foodCat = cats[0].id;
+  const items = menuFor(ui.foodRest, ui.foodCat), cart = cartItems(), total = cartTotal(), slots = deliverySlots(REST(ui.foodRest)), rest = REST(ui.foodRest), closedNow = !restOpenAt(rest, Date.now());
+  if (closedNow) { if (ui.deliver === 'asap' || !slots.includes(Number(ui.deliver))) ui.deliver = slots.length ? String(slots[0]) : 'asap'; }
+  else if (ui.deliver !== 'asap' && !slots.includes(Number(ui.deliver))) ui.deliver = 'asap';
+  const slotLbl = t => (dkey(new Date(t)) === dkey(new Date()) ? 'К ' : 'Завтра к ') + hhmm(new Date(t));
   const orders = state.orders.slice(0, 5), hasDone = state.orders.some(o => o.stage === 3);
   const cab = esc(CABIN.number);
   return `<div class="stack">
   <div class="vh"><span class="eyebrow">Доставка в каюту ${cab}</span><h1 tabindex="-1">Еда и напитки</h1><p>Добавьте блюда в корзину, выберите время и оформите заказ.</p></div>
   <div class="food">
     <section class="card" aria-labelledby="h-menu"><h2 class="sr" id="h-menu">Меню</h2>
-      <div class="chips scroll" role="group" aria-label="Разделы меню">${FOOD_CATS.map(c => `<button type="button" class="chip" data-act="food-cat" data-cat="${c.id}" aria-pressed="${ui.foodCat === c.id}">${c.label}</button>`).join('')}</div>
+      <label class="fld" for="dl-rest"><span>Ресторан</span><select id="dl-rest" data-food="rest">${RESTAURANTS.map(r => `<option value="${r.id}" ${ui.foodRest === r.id ? 'selected' : ''}>${r.name} · ${r.cuisine}</option>`).join('')}</select></label>
+      <div class="chips scroll" role="group" aria-label="Разделы меню">${cats.map(c => `<button type="button" class="chip" data-act="food-cat" data-cat="${c.id}" aria-pressed="${ui.foodCat === c.id}">${c.label}</button>`).join('')}</div>
       <div>${items.map(it => { const q = state.cart[it.id] || 0; return `<div class="item"><div><div class="n">${it.name}</div><div class="d">${it.desc}</div></div>
         <div class="act"><span class="price">${rub(it.price)}</span>${q ? `<div class="stp"><button type="button" class="rb" data-act="cart-sub" data-id="${it.id}" aria-label="Убрать: ${it.name}">${icon('minus')}</button><output class="stv">${q}</output><button type="button" class="rb" data-act="cart-add" data-id="${it.id}" aria-label="Добавить: ${it.name}">${icon('plus')}</button></div>` : `<button type="button" class="btn sm" data-act="cart-add" data-id="${it.id}">${icon('plus')}В корзину</button>`}</div></div>`; }).join('')}</div>
     </section>
@@ -890,7 +917,9 @@ function viewFood() {
       <section class="card" id="cart" aria-labelledby="h-cart"><h2 id="h-cart">Корзина</h2>
         ${cart.length ? `<div>${cart.map(i => `<div class="cl"><span class="n">${i.name}</span><div class="stp"><button type="button" class="rb" data-act="cart-sub" data-id="${i.id}" aria-label="Убрать: ${i.name}">${icon('minus')}</button><output class="stv">${i.qty}</output><button type="button" class="rb" data-act="cart-add" data-id="${i.id}" aria-label="Добавить: ${i.name}">${icon('plus')}</button></div></div>`).join('')}</div>
         <div class="tot"><span>Итого</span><span class="price">${rub(total)}</span></div>` : '<p class="empty">Корзина пуста. Добавьте блюда из меню.</p>'}
-        <label class="fld" for="dl-time"><span>Время доставки</span><select id="dl-time" data-food="deliver"><option value="asap" ${ui.deliver === 'asap' ? 'selected' : ''}>Как можно скорее</option>${slots.map(t => `<option value="${t}" ${String(ui.deliver) === String(t) ? 'selected' : ''}>К ${hhmm(new Date(t))}</option>`).join('')}</select></label>
+        <p class="muted" style="font-size:.85rem">Готовит ресторан «${esc(rest.name)}», работает ${rest.open}–${rest.close}. Доставим в каюту ${cab}.</p>
+        ${closedNow ? `<div class="err" role="status">Ресторан «${esc(rest.name)}» сейчас закрыт. Можно заказать на время, когда он откроется.</div>` : ''}
+        <label class="fld" for="dl-time"><span>Время доставки</span><select id="dl-time" data-food="deliver"><option value="asap" ${ui.deliver === 'asap' ? 'selected' : ''} ${closedNow ? 'disabled' : ''}>Как можно скорее</option>${slots.map(t => `<option value="${t}" ${String(ui.deliver) === String(t) ? 'selected' : ''}>${slotLbl(t)}</option>`).join('')}</select></label>
         <p class="muted" style="font-size:.85rem">Оплата на счёт каюты ${cab}. Демо: этапы заказа идут ускоренно, примерно 80 секунд.</p>
         <button type="button" class="btn primary" data-act="order-place" ${cart.length ? '' : 'disabled'}>${icon('check')}Оформить заказ</button>
       </section>
@@ -999,15 +1028,17 @@ function render() {
   if (sel) { try { const n = $('#view ' + sel); if (n && !n.disabled) n.focus({ preventScroll: true }); } catch (e) { } }
   paint();
 }
-let staffSig = null;
+let staffSig = null, staffOrdSig = null;
 function tick() {
   // Чистка общих баз: просроченные брони (startTs + 2 ч < now) и записи
   { const gb = getGlobalBookings(), kb = gb.filter(activeBk); if (kb.length !== gb.length) saveGlobalBookings(kb);
     const ga = getGlobalActs(), ka = ga.filter(activeAct); if (ka.length !== ga.length) saveGlobalActs(ka); }
+  { const go = getGlobalOrders(), ko = go.filter(o => o.deliverAt + 3 * 3600000 > Date.now()); if (ko.length !== go.length) saveGlobalOrders(ko); }
   if (!state) {
     // панель персонала: тикают таймеры, а список броней обновляется при изменениях
     if (!$('#staff').hidden) {
       if (staffSession.role === 'rest' || staffSession.role === 'fun') {
+        if (staffSession.role === 'rest' && staffUI.tab === 'orders') { const os = getGlobalOrders().map(o => o.id + stageOf(o, Date.now())).join(','); if (staffOrdSig !== os) { staffOrdSig = os; renderStaff(); } }
         const sig = staffSession.role === 'rest' ? getGlobalBookings().map(b => b.id).join(',') : getGlobalActs().map(b => b.id).join(',');
         if (staffSig !== null && sig !== staffSig) { staffSig = sig; renderStaff(); }
         staffSig = sig;
@@ -1062,10 +1093,10 @@ function renderStaff() {
   $('#staffTitle').textContent = title;
   $('#staffRoleTitle').textContent = title;
   $('#staffChip').textContent = `Сотрудник · ${cfg.name}`;
-  const tabs = role === 'rest' ? [['bookings', 'Брони'], ['tables', 'Столы']] : role === 'fun' ? [['main', 'Записи']] : [['main', 'Пассажиры']];
-  if (role === 'rest' && !['bookings', 'tables'].includes(staffUI.tab)) staffUI.tab = 'bookings';
+  const tabs = role === 'rest' ? [['bookings', 'Брони'], ['orders', 'Заказы'], ['tables', 'Столы']] : role === 'fun' ? [['main', 'Записи']] : [['main', 'Пассажиры']];
+  if (role === 'rest' && !['bookings', 'orders', 'tables'].includes(staffUI.tab)) staffUI.tab = 'bookings';
   $('#staffTabs').innerHTML = tabs.map(([k, l]) => `<button type="button" class="admin-tab ${role === 'rest' ? (staffUI.tab === k ? 'active' : '') : 'active'}" data-act="staff-tab" data-tab="${k}">${l}</button>`).join('');
-  $('#staffView').innerHTML = role === 'rest' ? (staffUI.tab === 'tables' ? viewTablesAdmin() : viewRestaurantAdmin()) : role === 'fun' ? viewFunAdmin() : viewReceptionAdmin();
+  $('#staffView').innerHTML = role === 'rest' ? (staffUI.tab === 'tables' ? viewTablesAdmin() : staffUI.tab === 'orders' ? viewOrdersAdmin() : viewRestaurantAdmin()) : role === 'fun' ? viewFunAdmin() : viewReceptionAdmin();
   applyArmed();
   paint();
 }
@@ -1123,6 +1154,25 @@ function viewRestaurantAdmin() {
   </div>`;
 }
 // Записи только выбранной категории (названия — строго из ACTIVITIES)
+// Заказы еды этого ресторана: номер, что заказали, куда доставить
+function viewOrdersAdmin() {
+  const now = Date.now();
+  const list = getGlobalOrders().filter(o => o.restId === staffSession.restId && stageOf(o, now) < 3).sort((a, b) => a.deliverAt - b.deliverAt);
+  return `<div class="stack">
+    <p class="muted">Заказов в работе: ${list.length}</p>
+    <section class="card"><div class="rows">
+      ${list.length ? list.map(o => `
+        <div class="row">
+          <div>
+            <div class="rt">Заказ ${esc(o.code)} · Доставить: каюта ${esc(o.cabin)}</div>
+            <div class="rs">${o.items.map(i => esc(i.name) + ' × ' + esc(i.qty)).join(', ')}</div>
+            <div class="rs">Гость: ${esc(o.guestName)} · к ${hhmm(new Date(o.deliverAt))} · ${esc(ORDER_STAGES[stageOf(o, now)])}</div>
+          </div>
+          <span class="price">${rub(o.total)}</span>
+        </div>`).join('') : '<p class="empty">Активных заказов нет.</p>'}
+    </div></section>
+  </div>`;
+}
 function viewFunAdmin() {
   const ids = new Set(ACTIVITIES.filter(a => a.cat === staffSession.cat).map(a => a.id));
   const list = getGlobalActs().filter(x => ids.has(x.actId) && activeAct(x)).sort((a, b) => a.startTs - b.startTs);
@@ -1253,11 +1303,17 @@ const ACTIONS = {
   'order-place'() {
     const items = cartItems();
     if (!items.length) { toast('Корзина пуста', 'warn'); return false; }
+    if (items.some(i => !availableAt(ui.foodRest, i.id))) { toast('В корзине есть блюда, которых нет в этом ресторане', 'warn'); return false; }
     const now = Date.now(); let asap = ui.deliver === 'asap', deliverAt;
     if (!asap) { deliverAt = Number(ui.deliver); if (!(deliverAt > now + 60000)) asap = true; }
     if (asap) deliverAt = now + ORDER_TOTAL;
+    const rr = REST(ui.foodRest);
+    if (!restOpenAt(rr, deliverAt) || (asap && !restOpenAt(rr, now))) { toast(`Ресторан «${rr.name}» не работает в это время (${rr.open}–${rr.close})`, 'warn'); return false; }
     const id = nextId('O');
-    state.orders.unshift({ id, code: codeFor('№', id), items, total: cartTotal(), createdAt: now, deliverAt, asap, t0: asap ? now : Math.max(now, deliverAt - ORDER_TOTAL), stage: 0 });
+    const gid = id + '-' + (hash(userKey) % 100000).toString(36), t0 = asap ? now : Math.max(now, deliverAt - ORDER_TOTAL);
+    const ord = { id, gid, code: codeFor('№', gid), restId: ui.foodRest, items, total: cartTotal(), createdAt: now, deliverAt, asap, t0, stage: 0 };
+    state.orders.unshift(ord);
+    const go = getGlobalOrders(); go.push({ id: gid, code: ord.code, restId: ord.restId, items, total: ord.total, cabin: CABIN.number, guestName: CABIN.guest, createdAt: now, deliverAt, t0 }); saveGlobalOrders(go);
     state.cart = {}; ui.deliver = 'asap';
     toast('Заказ принят');
   },
@@ -1352,6 +1408,13 @@ document.addEventListener('change', e => {
     let v = t.value || today; if (v < today) v = today; if (v > max) v = max;
     ui.book.date = v; ui.book.time = null; ui.book.table = null; render();
   } else if (t.dataset.food === 'deliver') { ui.deliver = t.value; }
+  else if (t.dataset.food === 'rest') {
+    ui.foodRest = t.value;
+    const drop = Object.keys(state.cart).filter(id => !availableAt(ui.foodRest, id));
+    drop.forEach(id => delete state.cart[id]);
+    if (drop.length) toast('Часть блюд убрана из корзины: их нет в этом ресторане', 'info');
+    save(); render();
+  }
 });
 
 /* ==== AUTH ==== */
