@@ -1,0 +1,1198 @@
+<title>Личный кабинет гостя</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* =========================================================
+   ДИЗАЙН-ПЛАН
+   Раскладка: липкая тёмно-синяя шапка, колонка контента до 1120px;
+   на телефоне разделы переключаются нижней панелью, с 900px — в шапке.
+   Палитра из ТЗ: глубокий синий #0B2545, бирюза #13A89E, песочный #E9C46A, белый.
+   Шрифты: Playfair Display (заголовки), Manrope (текст), JetBrains Mono (время, цифры).
+   ========================================================= */
+:root{
+  --navy:#0B2545; --teal:#13A89E; --sand:#E9C46A;
+  --bg:#EDF3F6; --surface:#FFFFFF; --surface-2:#E2ECF0; --ink:#0B2545; --muted:#46596D; --line:#C7D7DF;
+  --teal-ink:#0A6F68; --focus:#0A6F68;
+  --btn-bg:#0B2545; --btn-fg:#FFFFFF;
+  --bar:#0B2545; --bar-ink:#FFFFFF; --bar-mut:#B8CBDD;
+  --ok:#14694A; --ok-bg:#DAF1E7; --bad:#B3362B; --bad-bg:#FBE4E1;
+  --shadow:0 1px 2px rgba(11,37,69,.06),0 12px 28px -16px rgba(11,37,69,.32);
+  --f-body:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --f-disp:'Playfair Display',Georgia,'Times New Roman',serif;
+  --f-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --wave:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='24' viewBox='0 0 120 24'%3E%3Cpath d='M0 12c10-9 20-9 30 0s20 9 30 0 20-9 30 0 20 9 30 0' fill='none' stroke='%23fff' stroke-opacity='.3' stroke-width='1.6'/%3E%3C/svg%3E");
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#061A31; --surface:#0B2545; --surface-2:#10325D; --ink:#EAF3F8; --muted:#A5B9CB; --line:#22497B;
+    --teal-ink:#4FD6CB; --focus:#E9C46A;
+    --btn-bg:#13A89E; --btn-fg:#04182C;
+    --bar:#04142A; --ok:#5EE0A8; --ok-bg:rgba(94,224,168,.14); --bad:#FF9A8D; --bad-bg:rgba(255,154,141,.14);
+    --shadow:0 0 0 rgba(0,0,0,0); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#061A31; --surface:#0B2545; --surface-2:#10325D; --ink:#EAF3F8; --muted:#A5B9CB; --line:#22497B;
+  --teal-ink:#4FD6CB; --focus:#E9C46A;
+  --btn-bg:#13A89E; --btn-fg:#04182C;
+  --bar:#04142A; --ok:#5EE0A8; --ok-bg:rgba(94,224,168,.14); --bad:#FF9A8D; --bad-bg:rgba(255,154,141,.14);
+  --shadow:0 0 0 rgba(0,0,0,0); color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.5 var(--f-body);min-height:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bar);z-index:30}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2,h3,p,ol,ul{margin:0}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.top :focus-visible{outline-color:var(--sand)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ic{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.in{max-width:1120px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* ---------- Шапка и навигация ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bar);color:var(--bar-ink)}
+.top-in{display:flex;align-items:center;gap:14px;min-height:60px;padding-block:8px}
+.brand{display:flex;align-items:center;gap:10px;background:none;border:0;color:inherit;text-align:left;padding:4px;border-radius:12px}
+.brand svg{width:34px;height:34px;color:var(--sand);fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.brand b{display:block;font:700 1.05rem/1.1 var(--f-disp)}
+.brand small{display:block;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--bar-mut)}
+.top-r{margin-left:auto;display:flex;align-items:center;gap:14px}
+.mini{display:none;gap:14px;font:600 .85rem var(--f-mono)}
+.mini span{display:inline-flex;align-items:center;gap:5px}
+.mini .ic{width:16px;height:16px;color:var(--sand)}
+.cabin-chip{padding:6px 12px;border-radius:99px;border:1px solid rgba(255,255,255,.28);font:600 .8rem var(--f-mono);white-space:nowrap}
+
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;background:var(--bar);border-top:1px solid rgba(255,255,255,.14);
+  padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:56px;padding:6px 2px;border:0;border-radius:12px;background:none;color:var(--bar-mut);font:600 .7rem/1.1 var(--f-body);transition:background .2s,color .2s}
+.tab .ic{width:24px;height:24px}
+.tab[aria-current="page"]{color:#fff;background:rgba(255,255,255,.12)}
+.tab[aria-current="page"] .ic{color:var(--sand)}
+.l-l{display:none}
+
+main{padding-block:20px 128px}
+.stack{display:flex;flex-direction:column;gap:18px}
+
+/* ---------- Базовые компоненты ---------- */
+.vh{display:flex;flex-direction:column;gap:4px}
+.vh h1{font:700 clamp(1.65rem,5.5vw,2.3rem)/1.15 var(--f-disp);text-wrap:balance}
+.vh p{color:var(--muted);max-width:60ch}
+.eyebrow{font:700 .72rem var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--teal-ink)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px;min-width:0}
+.card h2{font:700 1.2rem/1.2 var(--f-disp)}
+.card-h{display:flex;align-items:center;gap:12px;justify-content:space-between}
+.card-h .t{display:flex;align-items:center;gap:10px;min-width:0}
+.card-h .t .ic{width:24px;height:24px;color:var(--teal-ink)}
+.muted{color:var(--muted)}
+.lbl{font:700 .74rem var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.empty{color:var(--muted);padding:6px 0}
+.big-v{font:600 2.4rem/1 var(--f-mono);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.big-v small{font-size:.45em;color:var(--muted);margin-left:2px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 20px;border-radius:12px;border:1.5px solid transparent;background:var(--surface-2);color:var(--ink);font-weight:700;transition:background .2s,transform .1s,opacity .2s}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--btn-bg);color:var(--btn-fg)}
+.btn.ghost{background:transparent;border-color:var(--line)}
+.btn.sm{min-height:44px;padding:8px 14px;font-size:.9rem}
+.btn.armed{background:var(--bad);color:#fff;border-color:var(--bad)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips.scroll{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.chip{min-height:44px;padding:8px 16px;border-radius:99px;border:1.5px solid var(--line);background:var(--surface);font-weight:600;white-space:nowrap;transition:background .2s,color .2s}
+.chip[aria-pressed="true"]{background:var(--btn-bg);color:var(--btn-fg);border-color:var(--btn-bg)}
+.chip .ic{width:18px;height:18px;margin-right:6px;vertical-align:-3px}
+.seg{display:inline-grid;grid-auto-flow:column;gap:4px;padding:4px;background:var(--surface-2);border-radius:14px;align-self:flex-start}
+.seg-b{min-height:44px;padding:6px 14px;border-radius:10px;border:0;background:transparent;font-weight:700;color:var(--muted)}
+.seg-b[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(11,37,69,.18)}
+.rb{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);flex:none}
+.rb[disabled]{opacity:.4;cursor:not-allowed}
+.stp{display:inline-flex;align-items:center;gap:8px}
+.stv{min-width:2.2ch;text-align:center;font:600 1.15rem var(--f-mono)}
+.fld{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fld>span,.fld>.lb{font:700 .78rem var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+input[type=date],input[type=time],input[type=number],input[type=text],input[type=email],input[type=password],select{min-height:48px;padding:8px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);width:100%;min-width:0;color-scheme:inherit}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font:700 .74rem var(--f-body);background:var(--surface-2);color:var(--muted);white-space:nowrap}
+.pill.on{background:var(--ok-bg);color:var(--ok)}
+.pill.heat{background:var(--sand);color:#0B2545}
+.pill.warn{background:var(--bad-bg);color:var(--bad)}
+.pill .ic{width:14px;height:14px}
+
+/* Таймер: переиспользуемый компонент обратного отсчёта */
+.cdw{display:inline-flex;flex-direction:column;gap:6px;min-width:0;max-width:100%}
+.cd{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:99px;background:var(--sand);color:#0B2545;font:600 .85rem var(--f-mono);align-self:flex-start;flex-wrap:wrap}
+.cd .ic{width:16px;height:16px}
+.cd-l{font:700 .72rem var(--f-body)}
+.cd-t{font-variant-numeric:tabular-nums}
+.cd-bar{display:block;height:4px;min-width:140px;border-radius:9px;background:var(--surface-2);overflow:hidden}
+.cd-bar i{display:block;height:100%;width:0;background:var(--teal);transition:width .9s linear}
+.tpick{display:flex;flex-direction:column;gap:12px}
+.tactive{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px;border-radius:14px;background:var(--surface-2)}
+.tactive-t{font-weight:700;margin-bottom:8px}
+
+/* Ползунки */
+.slider{display:flex;align-items:center;gap:10px}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;min-width:0;height:44px;background:transparent;margin:0;cursor:pointer;--p:50%}
+input[type=range]::-webkit-slider-runnable-track{height:10px;border-radius:99px;background:linear-gradient(to right,var(--teal) var(--p),var(--line) var(--p))}
+input[type=range]::-moz-range-track{height:10px;border-radius:99px;background:var(--line)}
+input[type=range]::-moz-range-progress{height:10px;border-radius:99px;background:var(--teal)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;margin-top:-10px;border-radius:50%;background:var(--sand);border:3px solid var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.25)}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--sand);border:3px solid var(--ink)}
+.switch{position:relative;width:68px;height:40px;border-radius:99px;border:0;background:var(--line);flex:none;transition:background .2s}
+.switch i{position:absolute;top:4px;left:4px;width:32px;height:32px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.3);transition:transform .2s}
+.switch[aria-checked="true"]{background:var(--teal)}
+.switch[aria-checked="true"] i{transform:translateX(28px)}
+
+/* ---------- Дашборд ---------- */
+.hero{position:relative;overflow:hidden;border-radius:24px;padding:22px 22px 54px;color:#fff;display:grid;gap:20px;
+  background:linear-gradient(160deg,#0B2545 0%,#0E3A63 55%,#0F6A73 100%)}
+.hero::before,.hero::after{content:"";position:absolute;left:0;right:0;height:24px;background:var(--wave) repeat-x 0 0/120px 24px;pointer-events:none}
+.hero::after{bottom:6px}
+.hero::before{bottom:24px;background-position:40px 0;opacity:.55}
+.hero>*{position:relative;z-index:1}
+.hero h1{font:700 clamp(1.7rem,6vw,2.5rem)/1.12 var(--f-disp);text-wrap:balance}
+.hero p{color:#CFE0EE;margin-top:6px}
+.hero .eyebrow{color:var(--sand)}
+.clock{font:600 clamp(2.6rem,12vw,3.8rem)/1 var(--f-mono);letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin:6px 0}
+.clock small{font-size:.4em;color:var(--sand);letter-spacing:0}
+.hero-date{color:#CFE0EE;text-transform:capitalize}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;padding:14px;border-radius:16px;background:var(--surface);border:1px solid var(--line);min-height:104px;min-width:0;box-shadow:var(--shadow)}
+.stat .ic{color:var(--teal-ink);width:22px;height:22px}
+.stat-v{font:600 clamp(1.05rem,4.6vw,1.5rem)/1 var(--f-mono);font-variant-numeric:tabular-nums}
+.stat-l{font-size:.76rem;color:var(--muted);font-weight:600}
+.meter{display:block;width:100%;height:5px;border-radius:9px;background:var(--surface-2);overflow:hidden;margin-top:auto}
+.meter i{display:block;height:100%;width:calc(var(--m,0) * 1%);background:var(--teal);transition:width .4s}
+.navs{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.nav-card{display:flex;flex-direction:column;align-items:flex-start;gap:10px;text-align:left;padding:16px;min-height:150px;border-radius:18px;border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow);transition:transform .2s,border-color .2s;min-width:0}
+.nav-card:hover{transform:translateY(-2px);border-color:var(--teal)}
+.nav-ic{display:grid;place-items:center;width:46px;height:46px;border-radius:14px;background:var(--navy);color:var(--sand)}
+.nav-ic .ic{width:24px;height:24px}
+.nav-card b{font:700 1.08rem/1.2 var(--f-disp)}
+.nav-card span.s{font-size:.84rem;color:var(--muted);margin-top:auto}
+.rows{display:flex;flex-direction:column}
+.row{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:14px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0;padding-top:0}
+.row>div{min-width:0}
+.row .rt{font-weight:700}
+.row .rs{color:var(--muted);font-size:.9rem}
+.row .ic.lead{width:22px;height:22px;color:var(--teal-ink)}
+.row .lead-w{display:flex;gap:12px;align-items:center}
+
+/* ---------- Рестораны ---------- */
+.rgrid{display:grid;grid-template-columns:1fr;gap:14px}
+.rcard{display:flex;flex-direction:column;gap:12px;padding:12px;border-radius:18px;background:var(--surface);border:2px solid var(--line);box-shadow:var(--shadow);min-width:0;transition:border-color .2s}
+.rcard.sel{border-color:var(--teal)}
+.rcard h3{font:700 1.15rem/1.2 var(--f-disp)}
+.rcard .meta{display:flex;flex-direction:column;gap:2px;color:var(--muted);font-size:.9rem}
+.photo{position:relative;aspect-ratio:16/9;max-width:100%;border-radius:12px;overflow:hidden;display:grid;place-items:center;color:rgba(255,255,255,.92)}
+.photo::after{content:"";position:absolute;inset:0;background:var(--wave) repeat 0 0/120px 24px;opacity:.8}
+.photo .ic{width:42px;height:42px;position:relative;z-index:1;stroke-width:1.5}
+.photo em{position:absolute;left:10px;bottom:8px;z-index:1;font:600 .64rem var(--f-body);font-style:normal;letter-spacing:.1em;text-transform:uppercase;opacity:.85}
+.t1{background:linear-gradient(135deg,#0B2545,#13A89E)}
+.t2{background:linear-gradient(135deg,#0F6A73,#0B2545)}
+.t3{background:linear-gradient(135deg,#1A2F57,#7C6A8A)}
+.t4{background:linear-gradient(135deg,#C2943A,#13A89E)}
+.t5{background:linear-gradient(135deg,#0B2545,#2C5F86)}
+.bgrid{display:grid;gap:22px}
+.form-r{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:72px;padding:6px;border-radius:14px;border:1.5px solid var(--teal);background:var(--surface);transition:background .2s}
+.tb b{font:700 1.15rem var(--f-mono)}
+.tb small{font-size:.7rem;color:var(--muted);font-weight:600}
+.tb[aria-pressed="true"]{background:var(--btn-bg);color:var(--btn-fg);border-color:var(--btn-bg)}
+.tb[aria-pressed="true"] small{color:inherit}
+.tb.busy{border-color:var(--line);background:repeating-linear-gradient(135deg,transparent 0 6px,var(--line) 6px 7px);color:var(--muted);cursor:not-allowed}
+.tb.small{border-style:dashed;border-color:var(--line);color:var(--muted);cursor:not-allowed}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.8rem;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:6px;border:1.5px solid var(--teal)}
+.legend i.b{border-color:var(--line);background:repeating-linear-gradient(135deg,transparent 0 3px,var(--line) 3px 4px)}
+.legend i.s{background:var(--btn-bg);border-color:var(--btn-bg)}
+.confirm{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;padding:18px;border-radius:18px;background:var(--ok-bg);border:1.5px solid var(--ok);color:var(--ink)}
+.confirm>div{flex:1;min-width:220px;display:flex;flex-direction:column;gap:6px}
+.confirm h2{font:700 1.2rem var(--f-disp)}
+.confirm .ic.big{width:30px;height:30px;color:var(--ok)}
+.code{font:600 .9rem var(--f-mono)}
+
+/* ---------- Мероприятия ---------- */
+.agrid{display:grid;gap:14px;grid-template-columns:1fr}
+.acard h3{font:700 1.1rem/1.25 var(--f-disp)}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.slot{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:58px;border-radius:12px;border:1.5px solid var(--teal);background:var(--surface);padding:6px}
+.slot b{font:700 1rem var(--f-mono)}
+.slot small{font-size:.7rem;font-weight:600;color:var(--muted)}
+.slot[disabled]{border-color:var(--line);color:var(--muted);cursor:not-allowed;opacity:.7}
+.slot.mine{background:var(--ok-bg);border-color:var(--ok);color:var(--ok);opacity:1}
+.slot.mine small{color:inherit}
+.agebar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+
+/* ---------- Каюта ---------- */
+.cgrid{display:grid;gap:18px;grid-template-columns:1fr}
+.dgrid{display:grid;gap:14px;grid-template-columns:1fr}
+.dev{display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:16px;border:1px solid var(--line);background:var(--bg);min-width:0}
+.dev-h{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.dev-h b{display:flex;align-items:center;gap:10px;font:700 1.05rem var(--f-disp)}
+.dev-h .ic{width:24px;height:24px;color:var(--teal-ink)}
+.ok-t{color:var(--ok);font-weight:700}
+.base-r{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;font-size:.9rem;color:var(--muted)}
+
+/* ---------- Еда ---------- */
+.food{display:grid;gap:18px;grid-template-columns:1fr}
+.item{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:14px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item>div{min-width:0}
+.item .n{font-weight:700}
+.item .d{color:var(--muted);font-size:.88rem}
+.price{font:600 .95rem var(--f-mono);white-space:nowrap}
+.item .act{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex:none}
+.cl{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.cl:first-child{border-top:0}
+.cl .n{font-weight:600;min-width:0}
+.tot{display:flex;justify-content:space-between;align-items:baseline;font-weight:800}
+.tot .price{font-size:1.25rem}
+.cartbar{position:fixed;z-index:15;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));
+  display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:52px;padding:10px 18px;border-radius:99px;border:0;background:var(--sand);color:#0B2545;font-weight:800;box-shadow:0 8px 24px -8px rgba(0,0,0,.45)}
+.steps{list-style:none;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.steps li{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:.72rem;font-weight:600;color:var(--muted)}
+.steps li::before{content:"";position:absolute;top:14px;right:50%;width:100%;height:2px;background:var(--line)}
+.steps li:first-child::before{display:none}
+.steps li.done::before,.steps li.cur::before{background:var(--teal)}
+.steps i{position:relative;z-index:1;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;border:2px solid var(--line);background:var(--surface);font:700 .8rem var(--f-mono);font-style:normal}
+.steps i .ic{width:16px;height:16px}
+.steps .done i{background:var(--teal);border-color:var(--teal);color:#04182C}
+.steps .cur i{background:var(--sand);border-color:var(--sand);color:#0B2545;animation:pulse 1.8s ease-in-out infinite}
+.steps .cur,.steps .done{color:var(--ink)}
+.order{display:flex;flex-direction:column;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
+.order:first-child{border-top:0;padding-top:0}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(233,196,106,.6)}50%{box-shadow:0 0 0 7px rgba(233,196,106,0)}}
+
+/* ---------- Toast ---------- */
+.toasts{position:fixed;z-index:40;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 70px);width:min(92vw,420px);display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:14px;background:var(--navy);color:#fff;font-weight:600;box-shadow:0 10px 30px -10px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.18);opacity:0;transform:translateY(-8px);transition:opacity .25s,transform .25s}
+.toast.in{opacity:1;transform:none}
+.toast .ic{color:var(--sand)}
+.toast.warn .ic{color:#FFB4A9}
+
+/* ---------- Авторизация и кнопка «Выйти» ---------- */
+.cabin-chip{display:none}
+.out{display:inline-flex;align-items:center;gap:8px;min-height:44px;min-width:44px;justify-content:center;padding:8px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.28);background:transparent;color:#fff;font-weight:700;font-size:.85rem}
+.out .t{display:none}
+.auth{position:relative;overflow:hidden;min-height:100vh;min-height:100dvh;display:flex;align-items:center;padding-block:32px 64px;color:#fff;background:linear-gradient(160deg,#0B2545 0%,#0E3A63 55%,#0F6A73 100%)}
+.auth::before,.auth::after{content:"";position:absolute;left:0;right:0;height:24px;background:var(--wave) repeat-x 0 0/120px 24px;pointer-events:none}
+.auth::after{bottom:10px}
+.auth::before{bottom:30px;background-position:40px 0;opacity:.55}
+.auth>.in{position:relative;z-index:1;width:100%}
+.auth-box{display:grid;gap:20px;width:100%;max-width:440px;margin:0 auto}
+.auth-brand{display:flex;align-items:center;gap:12px}
+.auth-brand svg{width:44px;height:44px;color:var(--sand);fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.auth-brand b{display:block;font:700 1.5rem/1.1 var(--f-disp)}
+.auth-brand small{display:block;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--bar-mut)}
+.auth .card{color:var(--ink)}
+.auth-h{font:700 1.4rem/1.2 var(--f-disp);text-wrap:balance}
+.err{padding:10px 12px;border-radius:12px;background:var(--bad-bg);color:var(--bad);font-weight:600;font-size:.9rem}
+.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.8rem}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.auth-note{font-size:.8rem;color:var(--muted)}
+
+@media (min-width:560px){
+  .mini{display:flex}
+  .cabin-chip{display:block}
+  .out .t{display:inline}
+  .rgrid{grid-template-columns:repeat(2,1fr)}
+  .agrid{grid-template-columns:repeat(2,1fr)}
+  .dgrid{grid-template-columns:repeat(3,1fr)}
+}
+@media (min-width:900px){
+  .tabs{position:static;display:flex;gap:4px;background:none;border:0;padding:0;margin-left:10px}
+  .tab{flex-direction:row;gap:8px;min-height:44px;padding:8px 14px;font-size:.9rem}
+  .tab .ic{width:20px;height:20px}
+  .l-s{display:none}.l-l{display:inline}
+  main{padding-block:28px 56px}
+  .hero{grid-template-columns:1fr auto;align-items:end;padding:30px 32px 62px}
+  .hero-r{order:-1}
+  .navs{grid-template-columns:repeat(4,1fr)}
+  .rgrid{grid-template-columns:repeat(4,1fr)}
+  .bgrid{grid-template-columns:1fr 1fr}
+  .cgrid{grid-template-columns:1fr 1fr}
+  .cgrid .wide{grid-column:1 / -1}
+  .agrid{grid-template-columns:repeat(3,1fr)}
+  .food{grid-template-columns:minmax(0,1fr) 360px;align-items:start}
+  .cartcol{position:sticky;top:84px;display:flex;flex-direction:column;gap:18px}
+  .cartbar{display:none}
+}
+@media (max-width:899px){.cartcol{display:flex;flex-direction:column;gap:18px}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+
+<header class="top" id="topbar" hidden>
+  <div class="in top-in">
+    <button type="button" class="brand" data-act="nav" data-view="dashboard" aria-label="На главную">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 16l2.5 4h15L22 16z"/><path d="M6 16v-5h12v5"/><path d="M10 11V7h4v4"/><path d="M12 4v3"/></svg>
+      <span><b>Северная Звезда</b><small>Личный кабинет гостя</small></span>
+    </button>
+    <nav class="tabs" id="tabs" aria-label="Разделы"></nav>
+    <div class="top-r">
+      <div class="mini" aria-label="Состояние каюты">
+        <span title="Температура"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14V5a2 2 0 0 1 4 0v9a4 4 0 1 1-4 0z"/></svg><span data-status="temp"></span></span>
+        <span title="Влажность"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg><span data-status="hum"></span></span>
+        <span title="Освещение"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg><span data-status="light"></span></span>
+      </div>
+      <div class="cabin-chip" id="cabinChip"></div>
+      <button type="button" class="out" data-act="logout" aria-label="Выйти из аккаунта"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 4H5v16h4"/><path d="M15 8l4 4-4 4M19 12H9"/></svg><span class="t">Выйти</span></button>
+    </div>
+  </div>
+</header>
+<main id="main" class="in" hidden><div id="view"></div></main>
+<div id="auth" class="auth" hidden></div>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* =========================================================
+   «Личный кабинет гостя» — прототип. Чистый JS, без библиотек.
+   Модули (секции ниже): utils → data → state → timers → climate →
+   devices → booking → events → food → ui.
+   Допущения помечены комментариями «ДОПУЩЕНИЕ».
+   ========================================================= */
+
+/* ================= 0. UTILS ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const pad = n => String(n).padStart(2, '0');
+const hhmm = d => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const dkey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const atTime = (key, t) => { const [y, m, d] = key.split('-').map(Number); const [h, mi] = t.split(':').map(Number); return new Date(y, m - 1, d, h, mi, 0, 0).getTime(); };
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+const rub = n => n.toLocaleString('ru-RU') + ' ₽';           // ДОПУЩЕНИЕ: цены в рублях, оплата на счёт каюты
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const hash = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+const plural = (n, f) => { const m = Math.abs(n) % 100, k = m % 10; if (m > 10 && m < 20) return f[2]; if (k > 1 && k < 5) return f[1]; if (k === 1) return f[0]; return f[2]; };
+const fmtDay = ts => new Date(ts).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+const fmtDur = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return h ? `${h}:${pad(m)}:${pad(x)}` : `${pad(m)}:${pad(x)}`; };
+
+const ICON = {
+  home: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+  dining: '<path d="M7 3v8M4.5 3v5a2.5 2.5 0 0 0 5 0V3M7 11v10"/><path d="M17 3c-2.2 1.8-3 4.5-3 8h3v10"/>',
+  cal: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/>',
+  sliders: '<path d="M5 4v16M12 4v16M19 4v16"/><circle cx="5" cy="9" r="2"/><circle cx="12" cy="15" r="2"/><circle cx="19" cy="8" r="2"/>',
+  cloche: '<path d="M3 18h18"/><path d="M5 18a7 7 0 0 1 14 0"/><path d="M12 8V6M10 6h4"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/>',
+  thermo: '<path d="M10 14V5a2 2 0 0 1 4 0v9a4 4 0 1 1-4 0z"/>',
+  drop: '<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  kettle: '<path d="M5 20h12l1-10H6z"/><path d="M8 10V8a3 3 0 0 1 6 0v2"/><path d="M18 12h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2"/>',
+  coffee: '<path d="M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z"/><path d="M16 10h2a2 2 0 0 1 0 4h-2"/><path d="M8 3v3M12 3v3"/>',
+  tv: '<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  minus: '<path d="M5 12h14"/>',
+  check: '<path d="M5 12l5 5 9-10"/>',
+  alert: '<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.5v.01"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.01"/>',
+  power: '<path d="M12 3v9"/><path d="M6.5 6.5a8 8 0 1 0 11 0"/>',
+  users: '<circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 5a3 3 0 0 1 0 6M18 14a6 6 0 0 1 3 6"/>',
+  wave: '<path d="M2 9c3-3 5-3 8 0s5 3 8 0 3-2 4-1M2 15c3-3 5-3 8 0s5 3 8 0 3-2 4-1"/>',
+  star: '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+  flame: '<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-4-1-6 1-9z"/>'
+};
+const icon = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICON[n] || ''}</svg>`;
+
+/* ================= 1. DATA (mock) ================= */
+// ДОПУЩЕНИЕ: гость, каюта и время — демо-данные; «бортовое время» = время устройства.
+// Заполняется при входе из профиля пользователя (см. enter()).
+const CABIN = { number: '', deck: null, guest: '' };
+
+// Схема зала: 12 столиков, число мест у каждого (общая для всех ресторанов).
+const SEATS = [2, 2, 2, 2, 4, 4, 4, 4, 6, 6, 2, 4];
+const RESTAURANTS = [
+  { id: 'horizon', name: 'Горизонт', cuisine: 'Европейская кухня, завтраки', open: '07:00', close: '22:30', deck: 5, tone: 't1', ic: 'dining' },
+  { id: 'neptune', name: 'Нептун', cuisine: 'Рыба и морепродукты', open: '12:00', close: '23:00', deck: 6, tone: 't2', ic: 'wave' },
+  { id: 'sakura', name: 'Сакура', cuisine: 'Японская кухня, суши-бар', open: '17:00', close: '23:30', deck: 7, tone: 't3', ic: 'star' },
+  { id: 'riviera', name: 'Ривьера', cuisine: 'Средиземноморская кухня, терраса', open: '08:00', close: '21:30', deck: 9, tone: 't4', ic: 'sun' }
+];
+const BOOKING_MINUTES = 90;   // ДОПУЩЕНИЕ: бронь длится 90 минут, последний слот = закрытие − 90 мин
+
+const CATS = [
+  { id: 'pool', label: 'Бассейн', ic: 'wave' },
+  { id: 'kids', label: 'Детские комнаты', ic: 'users' },
+  { id: 'spa', label: 'Спа', ic: 'drop' },
+  { id: 'fun', label: 'Развлечения', ic: 'star' }
+];
+// minAge/maxAge — возрастные ограничения, cap — вместимость одного сеанса.
+const ACTIVITIES = [
+  { id: 'swim', cat: 'pool', title: 'Утренний заплыв', place: 'Открытый бассейн, палуба 12', desc: 'Три дорожки по 25 метров, дежурный тренер.', minAge: 14, maxAge: 99, cap: 20, times: ['07:00', '08:00', '09:00'] },
+  { id: 'aqua', cat: 'pool', title: 'Аквааэробика', place: 'Открытый бассейн, палуба 12', desc: 'Групповое занятие под музыку, 45 минут.', minAge: 16, maxAge: 99, cap: 15, times: ['10:30', '15:00'] },
+  { id: 'kidpool', cat: 'pool', title: 'Детский бассейн', place: 'Палуба 12, мелкая зона', desc: 'Только в сопровождении взрослого.', minAge: 3, maxAge: 12, cap: 12, times: ['11:00', '13:00', '16:00'] },
+  { id: 'yunga', cat: 'kids', title: 'Клуб «Юнга»', place: 'Детская комната, палуба 9', desc: 'Игры, квесты и мультфильмы с аниматорами.', minAge: 4, maxAge: 8, cap: 15, times: ['10:00', '14:00', '18:00'] },
+  { id: 'craft', cat: 'kids', title: 'Творческая мастерская', place: 'Детская комната, палуба 9', desc: 'Модели кораблей, рисунки морем и узлы.', minAge: 6, maxAge: 12, cap: 10, times: ['11:00', '16:00'] },
+  { id: 'teen', cat: 'kids', title: 'Подростковая зона', place: 'Лаундж, палуба 9', desc: 'Настольные игры, приставки и турниры.', minAge: 13, maxAge: 17, cap: 12, times: ['17:00', '20:00'] },
+  { id: 'massage', cat: 'spa', title: 'Массаж «Морской бриз»', place: 'Спа-центр, палуба 9', desc: 'Расслабляющий массаж 50 минут.', minAge: 18, maxAge: 99, cap: 3, times: ['10:00', '12:00', '15:00', '17:00'] },
+  { id: 'hammam', cat: 'spa', title: 'Хаммам', place: 'Спа-центр, палуба 9', desc: 'Паровая с ароматическими маслами.', minAge: 18, maxAge: 99, cap: 6, times: ['14:00', '19:00'] },
+  { id: 'yoga', cat: 'spa', title: 'Йога на рассвете', place: 'Солярий, палуба 11', desc: 'Практика на открытой палубе, коврики выдаём.', minAge: 16, maxAge: 99, cap: 12, times: ['06:30', '07:30'] },
+  { id: 'live', cat: 'fun', title: 'Вечер живой музыки', place: 'Бар «Компас», палуба 6', desc: 'Джаз-трио и морские баллады.', minAge: 0, maxAge: 99, cap: 80, times: ['20:00', '22:00'] },
+  { id: 'quiz', cat: 'fun', title: 'Квиз «Капитанский час»', place: 'Лекторий, палуба 6', desc: 'Командная викторина о морях и портах.', minAge: 12, maxAge: 99, cap: 30, times: ['19:00'] },
+  { id: 'cinema', cat: 'fun', title: 'Кино под звёздами', place: 'Верхняя палуба 13', desc: 'Семейный фильм на большом экране.', minAge: 6, maxAge: 99, cap: 50, times: ['21:30'] },
+  { id: 'cocktail', cat: 'fun', title: 'Мастер-класс по коктейлям', place: 'Бар «Компас», палуба 6', desc: 'Три авторских коктейля с бармен-шефом.', minAge: 18, maxAge: 99, cap: 16, times: ['17:30'] }
+];
+
+const FOOD_CATS = [
+  { id: 'breakfast', label: 'Завтрак' }, { id: 'lunch', label: 'Обед' },
+  { id: 'dinner', label: 'Ужин' }, { id: 'drinks', label: 'Напитки' }
+];
+// ДОПУЩЕНИЕ: меню доступно круглосуточно, без ограничений по времени суток.
+const MENU = {
+  breakfast: [
+    { id: 'b1', name: 'Омлет с лососем и укропом', desc: 'Три яйца, слабосолёный лосось', price: 540 },
+    { id: 'b2', name: 'Сырники со сметаной', desc: 'С ягодным соусом', price: 420 },
+    { id: 'b3', name: 'Овсяная каша с мёдом', desc: 'Орехи, сухофрукты', price: 340 },
+    { id: 'b4', name: 'Авокадо-тост с пашот', desc: 'Цельнозерновой хлеб', price: 490 },
+    { id: 'b5', name: 'Круассан с миндальным кремом', desc: 'Свежая выпечка', price: 260 },
+    { id: 'b6', name: 'Фруктовая тарелка', desc: 'Сезонные фрукты и ягоды', price: 380 }
+  ],
+  lunch: [
+    { id: 'l1', name: 'Уха из красной рыбы', desc: 'С расстегаем', price: 480 },
+    { id: 'l2', name: 'Салат «Цезарь» с курицей', desc: 'Пармезан, гренки', price: 520 },
+    { id: 'l3', name: 'Паста с морепродуктами', desc: 'Креветки, мидии, кальмар', price: 790 },
+    { id: 'l4', name: 'Дорадо с овощами', desc: 'Запечённая на гриле', price: 980 },
+    { id: 'l5', name: 'Бургер «Капитан»', desc: 'Говядина, чеддер, картофель', price: 690 },
+    { id: 'l6', name: 'Крем-суп из тыквы', desc: 'Сливки, тыквенные семечки', price: 390 }
+  ],
+  dinner: [
+    { id: 'd1', name: 'Филе-миньон', desc: 'Картофельное пюре, соус демиглас', price: 1890 },
+    { id: 'd2', name: 'Лосось на гриле', desc: 'Спаржа, лимонное масло', price: 1450 },
+    { id: 'd3', name: 'Ризотто с белыми грибами', desc: 'Пармезан, трюфельное масло', price: 920 },
+    { id: 'd4', name: 'Утиная грудка', desc: 'Вишнёвый соус, батат', price: 1390 },
+    { id: 'd5', name: 'Тартар из тунца', desc: 'Авокадо, кунжут', price: 1100 },
+    { id: 'd6', name: 'Тирамису', desc: 'Классический рецепт', price: 450 }
+  ],
+  drinks: [
+    { id: 'k1', name: 'Американо', desc: '200 мл', price: 180 },
+    { id: 'k2', name: 'Капучино', desc: '250 мл', price: 230 },
+    { id: 'k3', name: 'Чайник чая', desc: 'Чёрный, зелёный или травяной', price: 160 },
+    { id: 'k4', name: 'Апельсиновый сок', desc: 'Свежевыжатый, 300 мл', price: 280 },
+    { id: 'k5', name: 'Лимонад «Морской бриз»', desc: 'Мята, лайм, содовая', price: 260 },
+    { id: 'k6', name: 'Минеральная вода', desc: '0,5 л', price: 120 }
+  ]
+};
+const ALL_ITEMS = [].concat(...Object.values(MENU));
+
+// Умная техника. heat — время нагрева в мс.
+// ДОПУЩЕНИЕ: время нагрева и этапы заказа УСКОРЕНЫ для демо (секунды вместо минут).
+const DEVICES = [
+  { id: 'kettle', name: 'Чайник', ic: 'kettle', autoOpts: [3, 5, 10], heat: { 60: 15000, 80: 30000, 100: 45000 } },
+  { id: 'coffee', name: 'Кофемашина', ic: 'coffee', autoOpts: [5, 10, 20], heat: 20000 },
+  { id: 'tv', name: 'Телевизор', ic: 'tv', autoOpts: [0, 30, 60, 120], heat: 0 }
+];
+const SCENES = { day: { label: 'День', level: 100 }, evening: { label: 'Вечер', level: 60 }, night: { label: 'Ночь', level: 15 }, cinema: { label: 'Кино', level: 25 } };
+const STEP = { light: 5, temp: 1, hum: 5 };
+
+// Этапы заказа (мс, демо-ускорение): принят → готовится → в пути → доставлен
+const ORDER_STAGES = ['Принят', 'Готовится', 'В пути', 'Доставлен'];
+const STAGE_MS = [10000, 40000, 30000];
+const ORDER_TOTAL = STAGE_MS.reduce((a, b) => a + b, 0);
+const STAGE_TOAST = [null, 'Заказ готовится', 'Заказ в пути', 'Заказ доставлен. Приятного аппетита!'];
+
+const REST = id => RESTAURANTS.find(r => r.id === id);
+const ACT = id => ACTIVITIES.find(a => a.id === id);
+
+/* ================= 2. STATE ================= */
+// Ключи localStorage. Данные каждого гостя хранятся отдельно: STORE_PREFIX + email.
+const USERS_KEY = 'ship-guest-users-v1';        // массив пользователей {name, email, password, cabin}
+const SESSION_KEY = 'ship-guest-session-v1';    // email текущего пользователя
+const STORE_PREFIX = 'ship-guest-cabin-v1:';    // состояние приложения конкретного гостя
+const LEGACY_KEY = 'ship-guest-cabin-v1';       // данные до появления авторизации (достаются первому вошедшему гостю)
+const defaults = () => ({
+  view: 'dashboard',
+  climate: { light: { on: true, level: 60, scene: 'evening' }, temp: 22, hum: 45, base: { temp: 22, hum: 45 } },
+  timers: {},        // key ('light'|'temp'|'hum'|'dev:<id>') → { endsAt, startedAt }
+  devices: {
+    kettle: { status: 'off', target: 80, autoOff: 5, heatStartedAt: 0, heatDoneAt: 0 },
+    coffee: { status: 'off', autoOff: 10, heatStartedAt: 0, heatDoneAt: 0 },
+    tv: { status: 'off', autoOff: 0, heatStartedAt: 0, heatDoneAt: 0 }
+  },
+  bookings: [],      // {id, restId, date, time, guests, table, startTs, code}
+  lastConfirm: null,
+  signups: [],       // {id:'actId|date|time', actId, dayKey, time, startTs, age}
+  cart: {},          // itemId → qty
+  orders: [],        // {id, items, total, createdAt, deliverAt, asap, t0, stage}
+  seq: 1
+});
+const isObj = v => v && typeof v === 'object' && !Array.isArray(v);
+const merge = (base, over) => { if (!isObj(over)) return base; for (const k of Object.keys(base)) { if (!(k in over)) continue; base[k] = isObj(base[k]) && isObj(over[k]) && !['timers', 'cart'].includes(k) ? merge(base[k], over[k]) : over[k]; } return base; };
+let state = null;      // состояние текущего гостя; null, пока никто не вошёл
+let userKey = null;    // ключ localStorage текущего гостя
+const loadUser = () => {
+  try {
+    let raw = localStorage.getItem(userKey);
+    if (!raw) { const old = localStorage.getItem(LEGACY_KEY); if (old) { raw = old; localStorage.removeItem(LEGACY_KEY); } }
+    if (raw) return merge(defaults(), JSON.parse(raw));
+  } catch (e) { /* хранилище недоступно — работаем в памяти */ }
+  return defaults();
+};
+const save = () => { if (!state || !userKey) return; try { localStorage.setItem(userKey, JSON.stringify(state)); } catch (e) { /* ignore */ } };
+const nextId = p => p + (state.seq++);
+const codeFor = (p, id) => `${p}-${1000 + hash(id) % 9000}`;
+
+// Состояние интерфейса (не сохраняется): выбранные поля форм.
+const freshUI = () => ({
+  book: { restId: 'horizon', date: dkey(new Date()), time: null, guests: 2, table: null },
+  evCat: 'pool', evDay: 0, age: 30,
+  foodCat: 'breakfast', deliver: 'asap',
+  pick: {}
+});
+const ui = freshUI();   // сбрасывается при входе и выходе
+
+/* ================= 3. TIMERS ================= */
+// Реестр таймеров: ключ → {endsAt, startedAt}; хранится в state.timers (переживает перезагрузку).
+// По истечении вызывается обработчик из Timers.handlers[key].
+const Timers = {
+  handlers: {},
+  start(key, endsAt) { state.timers[key] = { endsAt, startedAt: Date.now() }; save(); },
+  cancel(key) { delete state.timers[key]; save(); },
+  // Переиспользуемый компонент «таймер»: бейдж с обратным отсчётом (+ полоса прогресса).
+  // Тик раз в секунду обновляет все элементы .cd по data-end.
+  badge(endsAt, startedAt, o = {}) {
+    const total = Math.max(1, endsAt - startedAt);
+    const rem = endsAt - Date.now();
+    return `<span class="cdw"><span class="cd" data-end="${endsAt}" data-total="${total}" data-zero="${o.zero || '00:00'}">${icon('clock')}${o.label ? `<span class="cd-l">${o.label}</span>` : ''}<time class="cd-t">${rem > 0 ? fmtDur(rem) : (o.zero || '00:00')}</time></span>${o.bar ? `<span class="cd-bar"><i style="width:${clamp(100 * (1 - rem / total), 0, 100)}%"></i></span>` : ''}</span>`;
+  }
+};
+// Выбор времени: «через N минут» или конкретное ЧЧ:ММ
+const pickState = key => ui.pick[key] || (ui.pick[key] = { mode: 'after', minutes: 30, time: '23:00' });
+function pickerEnd(key) {
+  const p = pickState(key), now = Date.now();
+  if (p.mode === 'after') {
+    const m = Math.round(Number(p.minutes));
+    if (!(m >= 1 && m <= 720)) return { error: 'Укажите от 1 до 720 минут' };
+    return { endsAt: now + m * 60000 };
+  }
+  const [h, mi] = String(p.time || '').split(':').map(Number);
+  if (isNaN(h) || isNaN(mi)) return { error: 'Укажите время в формате ЧЧ:ММ' };
+  const d = new Date(); d.setHours(h, mi, 0, 0);
+  if (d.getTime() <= now + 30000) d.setDate(d.getDate() + 1);   // время уже прошло — берём завтра
+  return { endsAt: d.getTime() };
+}
+function pickerHTML(key) {
+  const p = pickState(key), id = 'tp-' + key;
+  return `<div class="tpick">
+    <div class="seg" role="group" aria-label="Способ задания таймера">
+      <button type="button" class="seg-b" data-act="pick-mode" data-key="${key}" data-mode="after" aria-pressed="${p.mode === 'after'}">Через N минут</button>
+      <button type="button" class="seg-b" data-act="pick-mode" data-key="${key}" data-mode="at" aria-pressed="${p.mode === 'at'}">В ЧЧ:ММ</button>
+    </div>
+    ${p.mode === 'after' ? `
+      <div class="chips" role="group" aria-label="Быстрый выбор">${[15, 30, 60, 120].map(m => `<button type="button" class="chip" data-act="pick-chip" data-key="${key}" data-min="${m}" aria-pressed="${Number(p.minutes) === m}">${m} мин</button>`).join('')}</div>
+      <label class="fld" for="${id}-min"><span>Минут</span><input id="${id}-min" type="number" inputmode="numeric" min="1" max="720" step="1" value="${p.minutes}" data-pick="${key}" data-field="minutes"></label>`
+    : `<label class="fld" for="${id}-at"><span>Время (ЧЧ:ММ)</span><input id="${id}-at" type="time" value="${p.time}" data-pick="${key}" data-field="time"></label>`}
+    <button type="button" class="btn primary" data-act="timer-start" data-key="${key}">${icon('clock')}Запустить таймер</button>
+  </div>`;
+}
+function timerTitle(key) {
+  const c = state.climate;
+  if (key === 'light') return 'Свет: выключение';
+  if (key === 'temp') return `Температура: возврат к ${c.base.temp} °C`;
+  if (key === 'hum') return `Влажность: возврат к ${c.base.hum}%`;
+  const d = DEVICES.find(x => 'dev:' + x.id === key);
+  return d ? `${d.name}: автоотключение` : key;
+}
+function timerBlock(key, hint) {
+  const t = state.timers[key];
+  if (!t) return `<div class="lbl">Таймер отключения · ${hint}</div>${pickerHTML(key)}`;
+  return `<div class="lbl">Таймер отключения</div><div class="tactive"><div><div class="tactive-t">${timerTitle(key)} в ${hhmm(new Date(t.endsAt))}</div>${Timers.badge(t.endsAt, t.startedAt, { label: 'осталось', bar: true })}</div><button type="button" class="btn ghost sm" data-act="timer-cancel" data-key="${key}">Отменить таймер</button></div>`;
+}
+
+/* ================= 4. CLIMATE ================= */
+const sceneFor = level => Object.keys(SCENES).find(k => SCENES[k].level === level) || null;
+function statusVal(k) {
+  const c = state.climate;
+  if (k === 'temp') return `${c.temp} °C`;
+  if (k === 'hum') return `${c.hum}%`;
+  return c.light.on && c.light.level > 0 ? `${c.light.level}%` : 'Выкл';
+}
+function meterVal(k) {
+  const c = state.climate;
+  if (k === 'temp') return (c.temp - 16) / 14 * 100;
+  if (k === 'hum') return (c.hum - 30) / 40 * 100;
+  return c.light.on ? c.light.level : 0;
+}
+// Статус-бар (дашборд + мини-панель в шапке) обновляется сразу при любом изменении.
+function updateStatus() {
+  $$('[data-status]').forEach(el => { el.textContent = statusVal(el.dataset.status); });
+  $$('[data-meter]').forEach(el => el.style.setProperty('--m', meterVal(el.dataset.meter)));
+}
+function setClimate(key, v) {
+  const c = state.climate;
+  if (key === 'light') { c.light.level = clamp(v, 0, 100); if (c.light.level > 0) c.light.on = true; c.light.scene = sceneFor(c.light.level); }
+  if (key === 'temp') c.temp = clamp(v, 16, 30);
+  if (key === 'hum') c.hum = clamp(v, 30, 70);
+}
+Timers.handlers.light = () => { state.climate.light.on = false; toast('Таймер сработал: свет выключен'); };
+Timers.handlers.temp = () => { state.climate.temp = state.climate.base.temp; toast(`Таймер сработал: температура ${state.climate.base.temp} °C`); };
+Timers.handlers.hum = () => { state.climate.hum = state.climate.base.hum; toast(`Таймер сработал: влажность ${state.climate.base.hum}%`); };
+
+function sliderHTML(key, o) {
+  const v = o.value, p = (v - o.min) / (o.max - o.min) * 100;
+  return `<div class="slider">
+    <button type="button" class="rb" data-act="step" data-key="${key}" data-d="-1" aria-label="Уменьшить: ${o.label}">${icon('minus')}</button>
+    <input type="range" id="rg-${key}" min="${o.min}" max="${o.max}" step="1" value="${v}" data-range="${key}" aria-label="${o.label}" style="--p:${p}%">
+    <button type="button" class="rb" data-act="step" data-key="${key}" data-d="1" aria-label="Увеличить: ${o.label}">${icon('plus')}</button>
+  </div>`;
+}
+function lightCard() {
+  const l = state.climate.light;
+  return `<section class="card" aria-labelledby="h-light">
+    <div class="card-h"><div class="t">${icon('sun')}<h2 id="h-light">Освещение</h2></div>
+      <button type="button" class="switch" role="switch" aria-checked="${l.on}" aria-label="Освещение: включить или выключить" data-act="light-toggle"><i></i></button></div>
+    <div class="big-v"><span data-val="light">${l.on ? l.level : 0}</span><small>%</small></div>
+    ${sliderHTML('light', { min: 0, max: 100, value: l.level, label: 'Яркость света, %' })}
+    <div class="lbl">Сценарии</div>
+    <div class="chips" role="group" aria-label="Сценарии освещения">${Object.keys(SCENES).map(k => `<button type="button" class="chip" data-act="scene" data-scene="${k}" aria-pressed="${l.on && l.scene === k}">${SCENES[k].label}</button>`).join('')}</div>
+    ${timerBlock('light', 'свет выключится')}
+  </section>`;
+}
+function climateCard(key) {
+  const c = state.climate, isT = key === 'temp';
+  const val = isT ? c.temp : c.hum, base = c.base[key];
+  return `<section class="card" aria-labelledby="h-${key}">
+    <div class="card-h"><div class="t">${icon(isT ? 'thermo' : 'drop')}<h2 id="h-${key}">${isT ? 'Температура' : 'Влажность'}</h2></div></div>
+    <div class="big-v"><span data-val="${key}">${val}</span><small>${isT ? '°C' : '%'}</small></div>
+    ${sliderHTML(key, isT ? { min: 16, max: 30, value: val, label: 'Температура, °C' } : { min: 30, max: 70, value: val, label: 'Влажность, %' })}
+    <div class="base-r"><span>Базовое значение: <b data-base="${key}">${base}${isT ? ' °C' : '%'}</b></span><button type="button" class="btn ghost sm" data-act="base-set" data-key="${key}">Запомнить текущее</button></div>
+    ${timerBlock(key, 'вернёмся к базовому')}
+  </section>`;
+}
+
+/* ================= 5. DEVICES ================= */
+const heatMs = d => d.id === 'kettle' ? d.heat[state.devices.kettle.target] : d.heat;
+function deviceOn(id) {
+  const d = DEVICES.find(x => x.id === id), s = state.devices[id], now = Date.now();
+  if (s.status !== 'off') return false;
+  const h = heatMs(d);
+  s.status = h > 0 ? 'heating' : 'on'; s.heatStartedAt = now; s.heatDoneAt = now + h;
+  if (s.autoOff > 0) Timers.start('dev:' + id, now + s.autoOff * 60000);
+  toast(`${d.name} включён${id === 'kettle' ? `: нагрев до ${s.target} °C` : ''}`);
+}
+function deviceOff(id, silent) {
+  const d = DEVICES.find(x => x.id === id), s = state.devices[id];
+  s.status = 'off'; Timers.cancel('dev:' + id);
+  if (!silent) toast(`${d.name} выключен`, 'info');
+}
+DEVICES.forEach(d => { Timers.handlers['dev:' + d.id] = () => { state.devices[d.id].status = 'off'; toast(`${d.name} выключился по таймеру`, 'info'); }; });
+
+function deviceCard(d) {
+  const s = state.devices[d.id], t = state.timers['dev:' + d.id];
+  const pill = s.status === 'off' ? '<span class="pill">Выключен</span>' : s.status === 'heating' ? `<span class="pill heat">${icon('flame')}Нагрев</span>` : '<span class="pill on">Включён</span>';
+  let body = '';
+  if (s.status === 'off') {
+    if (d.id === 'kettle') body += `<div class="lbl">Температура воды</div><div class="chips" role="group" aria-label="Температура воды">${[60, 80, 100].map(v => `<button type="button" class="chip" data-act="dev-temp" data-v="${v}" aria-pressed="${s.target === v}">${v} °C</button>`).join('')}</div>`;
+    body += `<div class="lbl">Автоотключение</div><div class="chips" role="group" aria-label="Автоотключение ${d.name}">${d.autoOpts.map(m => `<button type="button" class="chip" data-act="dev-auto" data-id="${d.id}" data-v="${m}" aria-pressed="${s.autoOff === m}">${m ? m + ' мин' : 'Без таймера'}</button>`).join('')}</div>`;
+    body += `<button type="button" class="btn primary" data-act="dev-on" data-id="${d.id}">${icon('power')}Включить удалённо</button>`;
+  } else {
+    if (s.status === 'heating') body += `<div class="lbl">${d.id === 'kettle' ? `Нагрев до ${s.target} °C` : 'Прогрев'}</div>${Timers.badge(s.heatDoneAt, s.heatStartedAt, { label: 'до готовности', bar: true })}`;
+    else body += `<p class="ok-t">${d.id === 'kettle' ? `Готов: ${s.target} °C` : d.id === 'coffee' ? 'Готова к приготовлению' : 'Работает'}</p>`;
+    body += t ? `<div class="lbl">Автоотключение</div>${Timers.badge(t.endsAt, t.startedAt, { label: 'выключится через', bar: true })}` : '<p class="muted">Автоотключение не задано</p>';
+    body += `<button type="button" class="btn" data-act="dev-off" data-id="${d.id}">${icon('power')}Выключить</button>`;
+  }
+  return `<div class="dev"><div class="dev-h"><b>${icon(d.ic)}${d.name}</b>${pill}</div>${body}</div>`;
+}
+// kettle target: data-id не нужен, но добавим для единообразия фокуса
+function devicesCard() {
+  return `<section class="card wide" aria-labelledby="h-dev"><div class="card-h"><div class="t">${icon('power')}<h2 id="h-dev">Умная техника</h2></div></div><div class="dgrid">${DEVICES.map(deviceCard).join('')}</div></section>`;
+}
+
+/* ================= 6. BOOKING (рестораны) ================= */
+const activeBookings = () => state.bookings.filter(b => b.startTs + BOOKING_MINUTES * 60000 > Date.now()).sort((a, b) => a.startTs - b.startTs);
+function timeSlots(r, dateKey) {
+  const out = [], lo = toMin(r.open), hi = toMin(r.close) - BOOKING_MINUTES, now = Date.now();
+  for (let m = lo; m <= hi; m += 30) { const t = `${pad(Math.floor(m / 60))}:${pad(m % 60)}`; if (atTime(dateKey, t) > now + 15 * 60000) out.push(t); }
+  return out;
+}
+// Занятость столиков — детерминированный mock + собственные брони гостя.
+function tableInfo(r, date, time, i, guests) {
+  const mine = state.bookings.some(x => x.restId === r.id && x.date === date && x.time === time && x.table === i + 1);
+  const busy = mine || hash(`${r.id}|${date}|${time}|${i}`) % 100 < 38;
+  return { seats: SEATS[i], busy, small: SEATS[i] < guests };
+}
+function restCard(r) {
+  const sel = ui.book.restId === r.id;
+  return `<article class="rcard ${sel ? 'sel' : ''}">
+    <div class="photo ${r.tone}" role="img" aria-label="Фото ресторана ${r.name} (заглушка)">${icon(r.ic)}<em>фото</em></div>
+    <div><h3>${r.name}</h3><div class="meta"><span>${r.cuisine}</span><span>${r.open}–${r.close} · палуба ${r.deck}</span></div></div>
+    <button type="button" class="btn ${sel ? 'primary' : ''}" data-act="rest-select" data-id="${r.id}" aria-pressed="${sel}">${sel ? icon('check') + 'Выбрано' : 'Выбрать'}</button>
+  </article>`;
+}
+function bookingRow(b) {
+  const r = REST(b.restId);
+  return `<div class="row"><div><div class="rt">${r.name} · стол ${b.table}</div><div class="rs">${fmtDay(b.startTs)}, ${b.time} · ${b.guests} ${plural(b.guests, ['гость', 'гостя', 'гостей'])} · ${b.code}</div></div>
+    <div class="lead-w">${Timers.badge(b.startTs, Date.now(), { label: 'до брони', zero: 'Идёт' })}<button type="button" class="btn ghost sm" data-act="bk-cancel" data-id="${b.id}" data-confirm="1">Отменить</button></div></div>`;
+}
+function viewRestaurants() {
+  const b = ui.book, r = REST(b.restId), times = timeSlots(r, b.date), today = dkey(new Date());
+  if (b.time && !times.includes(b.time)) { b.time = null; b.table = null; }
+  const act = activeBookings();
+  const last = act.find(x => x.id === state.lastConfirm);
+  const ready = b.time && b.table;
+  return `<div class="stack">
+  <div class="vh"><span class="eyebrow">Рестораны на борту</span><h1 tabindex="-1">Столик на вечер</h1><p>Выберите ресторан, дату, время и столик.</p></div>
+  <div class="rgrid">${RESTAURANTS.map(restCard).join('')}</div>
+  ${last ? `<section class="confirm" role="status">${icon('check', 'big')}<div><h2>Бронь подтверждена</h2><p>${REST(last.restId).name} · ${fmtDay(last.startTs)}, ${last.time} · ${last.guests} ${plural(last.guests, ['гость', 'гостя', 'гостей'])} · стол ${last.table}</p><p class="code">Код брони ${last.code}</p>${Timers.badge(last.startTs, Date.now(), { label: 'до визита', zero: 'Пора за стол' })}</div><button type="button" class="btn ghost sm" data-act="dismiss-confirm">Скрыть</button></section>` : ''}
+  <section class="card" aria-labelledby="h-book">
+    <div class="card-h"><div class="t">${icon('dining')}<h2 id="h-book">Бронь: ${r.name}</h2></div><span class="pill">${r.open}–${r.close}</span></div>
+    <div class="bgrid">
+      <div class="stack" style="gap:16px">
+        <div class="form-r">
+          <label class="fld" for="bk-date"><span>Дата</span><input type="date" id="bk-date" value="${b.date}" min="${today}" max="${dkey(addDays(new Date(), 7))}" data-bk="date"></label>
+          <div class="fld"><span class="lb" id="lb-g">Гостей</span>
+            <div class="stp" role="group" aria-labelledby="lb-g">
+              <button type="button" class="rb" data-act="bk-guests" data-d="-1" aria-label="Меньше гостей" ${b.guests <= 1 ? 'disabled' : ''}>${icon('minus')}</button>
+              <output class="stv" aria-live="polite">${b.guests}</output>
+              <button type="button" class="rb" data-act="bk-guests" data-d="1" aria-label="Больше гостей" ${b.guests >= 8 ? 'disabled' : ''}>${icon('plus')}</button>
+            </div></div>
+        </div>
+        <div class="fld"><span class="lb">Время</span>
+          ${times.length ? `<div class="chips" role="group" aria-label="Время брони">${times.map(t => `<button type="button" class="chip" data-act="bk-time" data-time="${t}" aria-pressed="${b.time === t}">${t}</button>`).join('')}</div>` : '<p class="empty">На эту дату свободного времени нет. Выберите другой день.</p>'}
+        </div>
+      </div>
+      <div class="stack" style="gap:12px">
+        <div class="fld"><span class="lb">Столик</span></div>
+        ${b.time ? `<div class="tgrid" role="group" aria-label="Выбор столика">${SEATS.map((_, i) => {
+          const q = tableInfo(r, b.date, b.time, i, b.guests), n = i + 1, on = b.table === n;
+          const cls = q.busy ? 'busy' : q.small ? 'small' : '';
+          return `<button type="button" class="tb ${cls}" data-act="table-pick" data-id="${n}" aria-pressed="${on}" ${q.busy || q.small ? 'disabled' : ''} aria-label="Стол ${n}, ${q.seats} ${plural(q.seats, ['место', 'места', 'мест'])}${q.busy ? ', занят' : q.small ? ', мало мест' : ''}"><b>${n}</b><small>${q.busy ? 'занят' : q.small ? 'мало мест' : q.seats + ' ' + plural(q.seats, ['место', 'места', 'мест'])}</small></button>`;
+        }).join('')}</div>
+        <div class="legend"><span><i></i>свободен</span><span><i class="b"></i>занят</span><span><i class="s"></i>выбран</span></div>` : '<p class="empty">Сначала выберите время, затем появится схема зала.</p>'}
+      </div>
+    </div>
+    <button type="button" class="btn primary" data-act="bk-confirm" ${ready ? '' : 'disabled'}>${icon('check')}Подтвердить бронь</button>
+    ${ready ? '' : '<p class="muted" style="font-size:.85rem">Выберите время и столик, чтобы подтвердить.</p>'}
+  </section>
+  <section class="card" aria-labelledby="h-my"><div class="card-h"><h2 id="h-my">Мои брони</h2><span class="pill">${act.length}</span></div>
+    <div class="rows">${act.length ? act.map(bookingRow).join('') : '<p class="empty">Активных броней нет. Выберите столик выше.</p>'}</div></section>
+  </div>`;
+}
+
+/* ================= 7. EVENTS (мероприятия) ================= */
+const activeSignups = () => state.signups.filter(s => s.startTs + 60 * 60000 > Date.now()).sort((a, b) => a.startTs - b.startTs);
+const ageText = a => a.maxAge < 99 ? `${a.minAge}–${a.maxAge} лет` : a.minAge > 0 ? `от ${a.minAge} лет` : 'Любой возраст';
+function takenFor(a, dayKey, time) { const h = hash(`${a.id}|${dayKey}|${time}`) % 100; return h < 18 ? a.cap : Math.floor(a.cap * (h % 70) / 100); }
+function slotLeft(a, dayKey, time) { const mine = state.signups.some(s => s.id === `${a.id}|${dayKey}|${time}`) ? 1 : 0; return Math.max(0, a.cap - takenFor(a, dayKey, time) - mine); }
+function actCard(a, dayKey) {
+  const ageOk = ui.age >= a.minAge && ui.age <= a.maxAge;
+  return `<article class="card acard"><div><h3>${a.title}</h3><p class="muted" style="font-size:.9rem">${a.place}</p></div>
+    <p>${a.desc}</p>
+    <div class="tags"><span class="pill ${ageOk ? '' : 'warn'}">${icon('users')}${ageText(a)}</span><span class="pill">Вместимость ${a.cap}</span></div>
+    <div class="slots" role="group" aria-label="Время сеансов: ${a.title}">${a.times.map(t => {
+      const id = `${a.id}|${dayKey}|${t}`, mine = state.signups.some(s => s.id === id), past = atTime(dayKey, t) <= Date.now(), left = slotLeft(a, dayKey, t);
+      const full = left === 0 && !mine;
+      return `<button type="button" class="slot ${mine ? 'mine' : ''}" data-act="ev-signup" data-slot="${id}" ${mine || past || full ? 'disabled' : ''} aria-label="${t}, ${mine ? 'вы записаны' : past ? 'сеанс прошёл' : full ? 'мест нет' : 'свободно мест: ' + left}"><b>${t}</b><small>${mine ? 'вы записаны' : past ? 'прошёл' : full ? 'мест нет' : left + ' ' + plural(left, ['место', 'места', 'мест'])}</small></button>`;
+    }).join('')}</div></article>`;
+}
+function signupRow(s) {
+  const a = ACT(s.actId);
+  return `<div class="row"><div><div class="rt">${a.title}</div><div class="rs">${fmtDay(s.startTs)}, ${s.time} · ${a.place} · возраст ${s.age}</div></div>
+    <div class="lead-w">${Timers.badge(s.startTs, Date.now(), { label: 'до начала', zero: 'Идёт' })}<button type="button" class="btn ghost sm" data-act="ev-cancel" data-id="${s.id}" data-confirm="1">Отменить</button></div></div>`;
+}
+function viewEvents() {
+  const dayKey = dkey(addDays(new Date(), ui.evDay)), list = ACTIVITIES.filter(a => a.cat === ui.evCat), my = activeSignups();
+  return `<div class="stack">
+  <div class="vh"><span class="eyebrow">Мероприятия</span><h1 tabindex="-1">Что сегодня на борту</h1><p>Выберите сеанс и запишитесь. Возраст участника проверяем по ограничениям.</p></div>
+  <div class="chips scroll" role="group" aria-label="Категории">${CATS.map(c => `<button type="button" class="chip" data-act="ev-cat" data-cat="${c.id}" aria-pressed="${ui.evCat === c.id}">${icon(c.ic)}${c.label}</button>`).join('')}</div>
+  <div class="agebar">
+    <div class="seg" role="group" aria-label="День">${[0, 1].map(d => `<button type="button" class="seg-b" data-act="ev-day" data-day="${d}" aria-pressed="${ui.evDay === d}">${d ? 'Завтра' : 'Сегодня'}, ${fmtDay(addDays(new Date(), d).getTime())}</button>`).join('')}</div>
+    <div class="fld" style="flex-direction:row;align-items:center;gap:10px"><span class="lb" id="lb-age" style="text-transform:none;letter-spacing:0;font-size:.9rem">Возраст участника</span>
+      <div class="stp" role="group" aria-labelledby="lb-age"><button type="button" class="rb" data-act="age" data-d="-1" aria-label="Меньше">${icon('minus')}</button><output class="stv" aria-live="polite">${ui.age}</output><button type="button" class="rb" data-act="age" data-d="1" aria-label="Больше">${icon('plus')}</button></div></div>
+  </div>
+  <div class="agrid">${list.map(a => actCard(a, dayKey)).join('')}</div>
+  <section class="card" aria-labelledby="h-sg"><div class="card-h"><h2 id="h-sg">Мои записи</h2><span class="pill">${my.length}</span></div>
+    <div class="rows">${my.length ? my.map(signupRow).join('') : '<p class="empty">Записей пока нет. Выберите время в карточке.</p>'}</div></section>
+  </div>`;
+}
+
+/* ================= 8. FOOD (доставка еды) ================= */
+const cartItems = () => Object.entries(state.cart).map(([id, q]) => { const it = ALL_ITEMS.find(x => x.id === id); return it ? { id, name: it.name, price: it.price, qty: q } : null; }).filter(Boolean);
+const cartTotal = () => cartItems().reduce((s, i) => s + i.price * i.qty, 0);
+const cartCount = () => cartItems().reduce((s, i) => s + i.qty, 0);
+function deliverySlots() {
+  const out = [], d = new Date(Date.now() + 30 * 60000); d.setSeconds(0, 0); d.setMinutes(Math.ceil(d.getMinutes() / 15) * 15);
+  for (let i = 0; i < 8; i++) { out.push(d.getTime()); d.setMinutes(d.getMinutes() + 15); }
+  return out;
+}
+const stageOf = (o, now) => { const e = now - o.t0; if (e < STAGE_MS[0]) return 0; if (e < STAGE_MS[0] + STAGE_MS[1]) return 1; if (e < ORDER_TOTAL) return 2; return 3; };
+function stepperHTML(stage) {
+  return `<ol class="steps" aria-label="Статус заказа">${ORDER_STAGES.map((l, i) => { const done = stage === 3 || i < stage, cur = !done && i === stage; return `<li class="${done ? 'done' : cur ? 'cur' : ''}" ${cur ? 'aria-current="step"' : ''}><i>${done ? icon('check') : i + 1}</i><span>${l}</span></li>`; }).join('')}</ol>`;
+}
+function orderRow(o) {
+  const names = o.items.map(i => `${i.name} × ${i.qty}`).join(', ');
+  const wait = o.stage === 0 && o.t0 > Date.now();
+  return `<div class="order"><div class="row" style="padding:0;border:0"><div><div class="rt">Заказ ${o.code || ''}</div><div class="rs">${names}</div></div><span class="price">${rub(o.total)}</span></div>
+    ${stepperHTML(o.stage)}
+    ${o.stage < 3 ? `<div>${Timers.badge(o.deliverAt, o.createdAt, { label: o.asap ? 'доставим через' : `к ${hhmm(new Date(o.deliverAt))}, осталось`, bar: true })}</div>${wait ? `<p class="muted" style="font-size:.85rem">Начнём готовить в ${hhmm(new Date(o.t0))}.</p>` : ''}` : `<p class="ok-t">Доставлен в ${hhmm(new Date(o.deliverAt))}</p>`}</div>`;
+}
+function viewFood() {
+  const items = MENU[ui.foodCat], cart = cartItems(), total = cartTotal(), slots = deliverySlots();
+  if (ui.deliver !== 'asap' && !slots.includes(Number(ui.deliver))) ui.deliver = 'asap';
+  const orders = state.orders.slice(0, 5), hasDone = state.orders.some(o => o.stage === 3);
+  return `<div class="stack">
+  <div class="vh"><span class="eyebrow">Доставка в каюту ${CABIN.number}</span><h1 tabindex="-1">Еда и напитки</h1><p>Добавьте блюда в корзину, выберите время и оформите заказ.</p></div>
+  <div class="food">
+    <section class="card" aria-labelledby="h-menu"><h2 class="sr" id="h-menu">Меню</h2>
+      <div class="chips scroll" role="group" aria-label="Разделы меню">${FOOD_CATS.map(c => `<button type="button" class="chip" data-act="food-cat" data-cat="${c.id}" aria-pressed="${ui.foodCat === c.id}">${c.label}</button>`).join('')}</div>
+      <div>${items.map(it => { const q = state.cart[it.id] || 0; return `<div class="item"><div><div class="n">${it.name}</div><div class="d">${it.desc}</div></div>
+        <div class="act"><span class="price">${rub(it.price)}</span>${q ? `<div class="stp"><button type="button" class="rb" data-act="cart-sub" data-id="${it.id}" aria-label="Убрать: ${it.name}">${icon('minus')}</button><output class="stv">${q}</output><button type="button" class="rb" data-act="cart-add" data-id="${it.id}" aria-label="Добавить: ${it.name}">${icon('plus')}</button></div>` : `<button type="button" class="btn sm" data-act="cart-add" data-id="${it.id}">${icon('plus')}В корзину</button>`}</div></div>`; }).join('')}</div>
+    </section>
+    <div class="cartcol">
+      <section class="card" id="cart" aria-labelledby="h-cart"><h2 id="h-cart">Корзина</h2>
+        ${cart.length ? `<div>${cart.map(i => `<div class="cl"><span class="n">${i.name}</span><div class="stp"><button type="button" class="rb" data-act="cart-sub" data-id="${i.id}" aria-label="Убрать: ${i.name}">${icon('minus')}</button><output class="stv">${i.qty}</output><button type="button" class="rb" data-act="cart-add" data-id="${i.id}" aria-label="Добавить: ${i.name}">${icon('plus')}</button></div></div>`).join('')}</div>
+        <div class="tot"><span>Итого</span><span class="price">${rub(total)}</span></div>` : '<p class="empty">Корзина пуста. Добавьте блюда из меню.</p>'}
+        <label class="fld" for="dl-time"><span>Время доставки</span><select id="dl-time" data-food="deliver"><option value="asap" ${ui.deliver === 'asap' ? 'selected' : ''}>Как можно скорее</option>${slots.map(t => `<option value="${t}" ${String(ui.deliver) === String(t) ? 'selected' : ''}>К ${hhmm(new Date(t))}</option>`).join('')}</select></label>
+        <p class="muted" style="font-size:.85rem">Оплата на счёт каюты ${CABIN.number}. Демо: этапы заказа идут ускоренно, примерно 80 секунд.</p>
+        <button type="button" class="btn primary" data-act="order-place" ${cart.length ? '' : 'disabled'}>${icon('check')}Оформить заказ</button>
+      </section>
+      <section class="card" aria-labelledby="h-ord"><div class="card-h"><h2 id="h-ord">Мои заказы</h2>${hasDone ? '<button type="button" class="btn ghost sm" data-act="orders-clear">Убрать доставленные</button>' : ''}</div>
+        <div>${orders.length ? orders.map(orderRow).join('') : '<p class="empty">Заказов пока нет.</p>'}</div></section>
+    </div>
+  </div>
+  ${cartCount() ? `<button type="button" class="cartbar" data-act="goto-cart"><span>Корзина · ${cartCount()} ${plural(cartCount(), ['позиция', 'позиции', 'позиций'])}</span><span class="price">${rub(total)}</span></button>` : ''}
+  </div>`;
+}
+
+/* ================= 9. UI: toast, views, события ================= */
+function toast(msg, kind = 'ok') {
+  const box = $('#toasts'), el = document.createElement('div');
+  el.className = 'toast ' + (kind === 'warn' ? 'warn' : '');
+  el.innerHTML = icon(kind === 'warn' ? 'alert' : kind === 'info' ? 'info' : 'check') + `<span>${msg}</span>`;
+  box.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('in'));
+  setTimeout(() => { el.classList.remove('in'); setTimeout(() => el.remove(), 300); }, 3200);
+  while (box.children.length > 3) box.firstChild.remove();
+}
+
+const TABS = [
+  { v: 'dashboard', ic: 'home', s: 'Главная', l: 'Главная' },
+  { v: 'restaurants', ic: 'dining', s: 'Рестораны', l: 'Рестораны' },
+  { v: 'events', ic: 'cal', s: 'События', l: 'Мероприятия' },
+  { v: 'cabin', ic: 'sliders', s: 'Каюта', l: 'Управление каютой' },
+  { v: 'food', ic: 'cloche', s: 'Еда', l: 'Доставка еды' }
+];
+
+function agenda() {
+  const now = Date.now(), items = [];
+  activeBookings().forEach(b => items.push({ ts: b.startTs, ic: 'dining', t: `${REST(b.restId).name} · стол ${b.table}`, s: `${fmtDay(b.startTs)}, ${b.time}`, lb: 'до брони', zero: 'Идёт' }));
+  activeSignups().forEach(s => items.push({ ts: s.startTs, ic: 'cal', t: ACT(s.actId).title, s: `${fmtDay(s.startTs)}, ${s.time}`, lb: 'до начала', zero: 'Идёт' }));
+  state.orders.filter(o => o.stage < 3).forEach(o => items.push({ ts: o.deliverAt, ic: 'cloche', t: `Заказ: ${ORDER_STAGES[o.stage].toLowerCase()}`, s: o.asap ? 'Как можно скорее' : `К ${hhmm(new Date(o.deliverAt))}`, lb: 'доставка', zero: 'Скоро' }));
+  Object.keys(state.timers).forEach(k => items.push({ ts: state.timers[k].endsAt, ic: 'clock', t: timerTitle(k), s: `В ${hhmm(new Date(state.timers[k].endsAt))}`, lb: 'таймер', zero: 'Сейчас' }));
+  return items.sort((a, b) => a.ts - b.ts).slice(0, 6).map(i => ({ ...i, now }));
+}
+function viewDashboard() {
+  const d = new Date(), h = d.getHours();
+  const hello = h < 5 ? 'Доброй ночи' : h < 12 ? 'Доброе утро' : h < 18 ? 'Добрый день' : 'Добрый вечер';
+  const nb = activeBookings().length, ns = activeSignups().length, nt = Object.keys(state.timers).length, no = state.orders.filter(o => o.stage < 3).length;
+  const tile = (k, ic, label) => `<button type="button" class="stat" data-act="nav" data-view="cabin" aria-label="${label}, открыть управление каютой">${icon(ic)}<span class="stat-v" data-status="${k}"></span><span class="stat-l">${label}</span><span class="meter" data-meter="${k}"><i></i></span></button>`;
+  const cards = [
+    { v: 'restaurants', ic: 'dining', t: 'Рестораны', s: nb ? `${nb} ${plural(nb, ['бронь', 'брони', 'броней'])}` : 'Столики на борту' },
+    { v: 'events', ic: 'cal', t: 'Мероприятия', s: ns ? `${ns} ${plural(ns, ['запись', 'записи', 'записей'])}` : 'Бассейн, спа, детям' },
+    { v: 'cabin', ic: 'sliders', t: 'Управление каютой', s: nt ? `${nt} ${plural(nt, ['таймер', 'таймера', 'таймеров'])}` : 'Свет, климат, техника' },
+    { v: 'food', ic: 'cloche', t: 'Доставка еды', s: no ? `${no} ${plural(no, ['заказ', 'заказа', 'заказов'])} в работе` : 'Меню 24 часа' }
+  ];
+  const ag = agenda();
+  return `<div class="stack">
+  <section class="hero" aria-label="Приветствие">
+    <div class="hero-r"><span class="eyebrow">Личный кабинет гостя</span><h1 tabindex="-1">${hello}, ${CABIN.guest}</h1><p>Каюта <b>${CABIN.number}</b>${CABIN.deck ? ` · палуба ${CABIN.deck}` : ''}</p></div>
+    <div class="hero-l"><span class="eyebrow">Бортовое время</span><div class="clock" aria-hidden="true"><span data-clock="hm"></span><small data-clock="s"></small></div><span class="hero-date" data-clock="date"></span></div>
+  </section>
+  <section aria-labelledby="h-st"><h2 class="sr" id="h-st">Состояние каюты</h2>
+    <div class="stats">${tile('temp', 'thermo', 'Температура')}${tile('hum', 'drop', 'Влажность')}${tile('light', 'sun', 'Свет')}</div></section>
+  <section aria-labelledby="h-nv"><h2 class="sr" id="h-nv">Разделы</h2>
+    <div class="navs">${cards.map(c => `<button type="button" class="nav-card" data-act="nav" data-view="${c.v}"><span class="nav-ic">${icon(c.ic)}</span><b>${c.t}</b><span class="s">${c.s}</span></button>`).join('')}</div></section>
+  <section class="card" aria-labelledby="h-ag"><h2 id="h-ag">Ближайшее</h2>
+    <div class="rows">${ag.length ? ag.map(i => `<div class="row"><div class="lead-w">${icon(i.ic, 'lead')}<div><div class="rt">${i.t}</div><div class="rs">${i.s}</div></div></div>${Timers.badge(i.ts, i.now, { label: i.lb, zero: i.zero })}</div>`).join('') : '<p class="empty">Пока ничего не запланировано. Забронируйте столик, запишитесь на мероприятие или включите таймер в каюте.</p>'}</div></section>
+  </div>`;
+}
+function viewCabin() {
+  return `<div class="stack">
+  <div class="vh"><span class="eyebrow">Каюта ${CABIN.number}</span><h1 tabindex="-1">Управление каютой</h1><p>Свет, климат и техника. Изменения сразу видны на главной.</p></div>
+  <div class="cgrid">${lightCard()}${climateCard('temp')}${climateCard('hum')}${devicesCard()}</div></div>`;
+}
+const VIEWS = { dashboard: viewDashboard, restaurants: viewRestaurants, events: viewEvents, cabin: viewCabin, food: viewFood };
+
+// Фокус не должен теряться при перерисовке
+const focusKey = el => { const d = el.dataset; return JSON.stringify([d.act, d.id, d.key, d.time, d.v, d.slot, d.cat, d.day, d.mode, d.min, d.scene, d.d, d.view]); };
+function render() {
+  if (!state) return;
+  const ae = document.activeElement;
+  const fk = ae && ae.dataset && ae.dataset.act ? focusKey(ae) : null, fid = ae && ae.id ? ae.id : null;
+  $('#view').innerHTML = (VIEWS[state.view] || viewDashboard)();
+  $$('.tab').forEach(t => { if (t.dataset.view === state.view) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current'); });
+  updateStatus(); updateClock(); updateCountdowns(Date.now());
+  if (fk) { const t = $$('[data-act]').find(x => focusKey(x) === fk); if (t) t.focus({ preventScroll: true }); }
+  else if (fid) { const t = document.getElementById(fid); if (t) t.focus({ preventScroll: true }); }
+}
+function updateClock() {
+  const d = new Date();
+  $$('[data-clock]').forEach(el => {
+    const k = el.dataset.clock;
+    el.textContent = k === 'hm' ? hhmm(d) : k === 's' ? ':' + pad(d.getSeconds()) : d.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+  });
+}
+function updateCountdowns(now) {
+  $$('.cd').forEach(el => {
+    const rem = Number(el.dataset.end) - now, t = el.querySelector('.cd-t');
+    if (t) t.textContent = rem > 0 ? fmtDur(rem) : (el.dataset.zero || '00:00');
+    const bar = el.parentElement.querySelector('.cd-bar i');
+    if (bar) bar.style.width = clamp(100 * (1 - rem / Number(el.dataset.total)), 0, 100) + '%';
+  });
+}
+
+// Главный тик (1 с): срабатывание таймеров, нагрев техники, этапы заказов, устаревшие брони.
+let lastSig = null;
+function tick() {
+  if (!state) return;                     // никто не вошёл — таймеры не идут
+  const now = Date.now(); let changed = false;
+  for (const key of Object.keys(state.timers)) {
+    if (state.timers[key].endsAt <= now) { delete state.timers[key]; const h = Timers.handlers[key]; if (h) h(); changed = true; }
+  }
+  for (const d of DEVICES) {
+    const s = state.devices[d.id];
+    if (s.status === 'heating' && now >= s.heatDoneAt) { s.status = 'on'; toast(d.id === 'kettle' ? `Чайник нагрел воду до ${s.target} °C` : `${d.name} готова`); changed = true; }
+  }
+  for (const o of state.orders) {
+    if (o.stage < 3) { const st = stageOf(o, now); if (st > o.stage) { o.stage = st; toast(STAGE_TOAST[st]); changed = true; } }
+  }
+  const sig = activeBookings().map(b => b.id).join() + '|' + activeSignups().map(s => s.id).join();
+  if (sig !== lastSig) { if (lastSig !== null) changed = true; lastSig = sig; }
+  if (changed) { save(); render(); } else updateCountdowns(now);
+  updateClock();
+}
+
+/* ---------- Действия (делегирование кликов) ---------- */
+// Обработчик возвращает false, если перерисовка не нужна.
+const ACTIONS = {
+  nav(el) { state.view = el.dataset.view; render(); window.scrollTo(0, 0); const h = $('#view h1'); if (h) h.focus({ preventScroll: true }); return false; },
+  // авторизация
+  logout() { logout(); return false; },
+  'auth-mode'(el) { authUI.mode = el.dataset.mode; renderAuth(); const f = $('#au-email'); if (f) f.focus({ preventScroll: true }); return false; },
+  'demo-login'() { demoLogin(); return false; },
+  // рестораны
+  'rest-select'(el) { ui.book.restId = el.dataset.id; ui.book.time = null; ui.book.table = null; },
+  'bk-time'(el) { ui.book.time = el.dataset.time; ui.book.table = null; },
+  'bk-guests'(el) { const b = ui.book; b.guests = clamp(b.guests + Number(el.dataset.d), 1, 8); if (b.table && SEATS[b.table - 1] < b.guests) b.table = null; },
+  'table-pick'(el) { ui.book.table = Number(el.dataset.id); },
+  'bk-confirm'() {
+    const b = ui.book, r = REST(b.restId);
+    if (!b.time || !b.table) { toast('Выберите время и столик', 'warn'); return false; }
+    const q = tableInfo(r, b.date, b.time, b.table - 1, b.guests);
+    if (q.busy || q.small) { toast('Этот столик недоступен. Выберите другой', 'warn'); b.table = null; return; }
+    const startTs = atTime(b.date, b.time);
+    if (startTs <= Date.now()) { toast('Это время уже прошло', 'warn'); return; }
+    if (activeBookings().some(x => x.startTs === startTs)) { toast('На это время у вас уже есть бронь', 'warn'); return false; }
+    const id = nextId('B');
+    state.bookings.push({ id, restId: r.id, date: b.date, time: b.time, guests: b.guests, table: b.table, startTs, code: codeFor('RB', id) });
+    state.lastConfirm = id; b.table = null; b.time = null;
+    toast('Бронь подтверждена');
+  },
+  'bk-cancel'(el) { const id = el.dataset.id; state.bookings = state.bookings.filter(x => x.id !== id); if (state.lastConfirm === id) state.lastConfirm = null; toast('Бронь отменена', 'info'); },
+  'dismiss-confirm'() { state.lastConfirm = null; },
+  // мероприятия
+  'ev-cat'(el) { ui.evCat = el.dataset.cat; },
+  'ev-day'(el) { ui.evDay = Number(el.dataset.day); },
+  age(el) { ui.age = clamp(ui.age + Number(el.dataset.d), 0, 99); },
+  'ev-signup'(el) {
+    const id = el.dataset.slot, [actId, dayKey, time] = id.split('|'), a = ACT(actId), ts = atTime(dayKey, time);
+    if (ts <= Date.now()) { toast('Этот сеанс уже начался', 'warn'); return; }
+    if (ui.age < a.minAge || ui.age > a.maxAge) { toast(`Возраст не подходит. Ограничение: ${ageText(a)}`, 'warn'); return false; }
+    if (state.signups.some(s => s.startTs === ts)) { toast('На это время у вас уже есть запись', 'warn'); return false; }
+    if (slotLeft(a, dayKey, time) <= 0) { toast('Мест на этот сеанс нет', 'warn'); return; }
+    state.signups.push({ id, actId, dayKey, time, startTs: ts, age: ui.age });
+    toast(`Запись подтверждена: ${a.title}, ${time}`);
+  },
+  'ev-cancel'(el) { state.signups = state.signups.filter(s => s.id !== el.dataset.id); toast('Запись отменена', 'info'); },
+  // каюта
+  'light-toggle'() { const l = state.climate.light; l.on = !l.on; if (l.on && l.level === 0) setClimate('light', 50); toast(l.on ? 'Свет включён' : 'Свет выключен', 'info'); },
+  scene(el) { const l = state.climate.light, k = el.dataset.scene; l.level = SCENES[k].level; l.scene = k; l.on = true; toast(`Сценарий «${SCENES[k].label}»`, 'info'); },
+  step(el) { const k = el.dataset.key, c = state.climate; setClimate(k, (k === 'light' ? c.light.level : c[k]) + Number(el.dataset.d) * STEP[k]); },
+  'base-set'(el) { const k = el.dataset.key; state.climate.base[k] = state.climate[k]; toast(`Базовое значение: ${state.climate[k]}${k === 'temp' ? ' °C' : '%'}`, 'info'); },
+  'pick-mode'(el) { pickState(el.dataset.key).mode = el.dataset.mode; },
+  'pick-chip'(el) { pickState(el.dataset.key).minutes = Number(el.dataset.min); },
+  'timer-start'(el) {
+    const key = el.dataset.key;
+    if (key === 'light' && !state.climate.light.on) { toast('Сначала включите свет', 'warn'); return false; }
+    const r = pickerEnd(key);
+    if (r.error) { toast(r.error, 'warn'); return false; }
+    Timers.start(key, r.endsAt);
+    toast(`Таймер установлен: ${timerTitle(key).toLowerCase()} в ${hhmm(new Date(r.endsAt))}`);
+  },
+  'timer-cancel'(el) { Timers.cancel(el.dataset.key); toast('Таймер отменён', 'info'); },
+  'dev-temp'(el) { state.devices.kettle.target = Number(el.dataset.v); },
+  'dev-auto'(el) { state.devices[el.dataset.id].autoOff = Number(el.dataset.v); },
+  'dev-on'(el) { deviceOn(el.dataset.id); },
+  'dev-off'(el) { deviceOff(el.dataset.id); },
+  // еда
+  'food-cat'(el) { ui.foodCat = el.dataset.cat; },
+  'cart-add'(el) { const id = el.dataset.id; state.cart[id] = (state.cart[id] || 0) + 1; },
+  'cart-sub'(el) { const id = el.dataset.id; if (!state.cart[id]) return; state.cart[id]--; if (state.cart[id] <= 0) delete state.cart[id]; },
+  'goto-cart'() { const c = $('#cart'); if (c) c.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); return false; },
+  'orders-clear'() { state.orders = state.orders.filter(o => o.stage < 3); },
+  'order-place'() {
+    const items = cartItems();
+    if (!items.length) { toast('Корзина пуста', 'warn'); return false; }
+    const now = Date.now(); let asap = ui.deliver === 'asap', deliverAt;
+    if (!asap) { deliverAt = Number(ui.deliver); if (!(deliverAt > now + 60000)) asap = true; }
+    if (asap) deliverAt = now + ORDER_TOTAL;
+    const id = nextId('O');
+    state.orders.unshift({ id, code: codeFor('№', id), items, total: cartTotal(), createdAt: now, deliverAt, asap, t0: asap ? now : Math.max(now, deliverAt - ORDER_TOTAL), stage: 0 });
+    state.cart = {}; ui.deliver = 'asap';
+    toast('Заказ принят');
+  }
+};
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el || el.disabled) return;
+  // Двухшаговое подтверждение (confirm() в артефакте недоступен)
+  if (el.dataset.confirm && !el.classList.contains('armed')) {
+    el.classList.add('armed'); el._label = el.textContent; el.textContent = 'Точно отменить?';
+    clearTimeout(el._t); el._t = setTimeout(() => { el.classList.remove('armed'); el.textContent = el._label; }, 3500);
+    return;
+  }
+  const fn = ACTIONS[el.dataset.act];
+  if (!fn) return;
+  const res = fn(el);
+  save();
+  if (res !== false) render();
+});
+
+// Ползунки: обновляем состояние и статус-бар на лету, без перерисовки
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.matches('input[type=range][data-range]')) {
+    const k = t.dataset.range; setClimate(k, Number(t.value));
+    t.style.setProperty('--p', (t.value - t.min) / (t.max - t.min) * 100 + '%');
+    const v = $(`[data-val="${k}"]`); if (v) v.textContent = k === 'light' ? (state.climate.light.on ? state.climate.light.level : 0) : state.climate[k];
+    if (k === 'light') { const sw = $('[data-act="light-toggle"]'); if (sw) sw.setAttribute('aria-checked', String(state.climate.light.on)); $$('[data-scene]').forEach(b => b.setAttribute('aria-pressed', String(state.climate.light.on && state.climate.light.scene === b.dataset.scene))); }
+    updateStatus(); save();
+  } else if (t.dataset.pick) {
+    pickState(t.dataset.pick)[t.dataset.field] = t.value;
+  }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.dataset.bk === 'date') {
+    const today = dkey(new Date()); let v = t.value || today; if (v < today) v = today;
+    ui.book.date = v; ui.book.time = null; ui.book.table = null; render();
+  } else if (t.dataset.food === 'deliver') { ui.deliver = t.value; }
+});
+
+/* ================= 9b. AUTH (регистрация, вход, сессия) ================= */
+// ДОПУЩЕНИЕ: это прототип без сервера. Пользователи и пароли лежат в localStorage
+// браузера в открытом виде, как задано в ТЗ. В продакшене нужен бэкенд и хэширование паролей.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DEMO = { name: 'Анна Морозова', email: 'demo@ship.local', password: 'demo123', cabin: '7214' };
+const SHIP_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 16l2.5 4h15L22 16z"/><path d="M6 16v-5h12v5"/><path d="M10 11V7h4v4"/><path d="M12 4v3"/></svg>';
+const authUI = { mode: 'login', email: '' };
+const normEmail = s => String(s || '').trim().toLowerCase();
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+let memUsers = null, memSession = null;   // запасной вариант, если localStorage недоступен
+const readUsers = () => { try { const a = JSON.parse(localStorage.getItem(USERS_KEY)); if (Array.isArray(a)) return a; } catch (e) { /* ignore */ } return memUsers || []; };
+const writeUsers = a => { memUsers = a; try { localStorage.setItem(USERS_KEY, JSON.stringify(a)); } catch (e) { /* ignore */ } };
+const getSession = () => { try { const s = localStorage.getItem(SESSION_KEY); if (s) return s; } catch (e) { /* ignore */ } return memSession;};
+const setSession = email => { memSession = email; try { localStorage.setItem(SESSION_KEY, email); } catch (e) { /* ignore */ } };
+const clearSession = () => { memSession = null; try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* ignore */ } };
+// Палуба — по номеру каюты: 7214 → 7, 305 → 3; если номер нечисловой, палубу не показываем.
+const deckOf = c => { const n = parseInt(c, 10); if (isNaN(n)) return null; if (n >= 1000) return Math.floor(n / 1000); if (n >= 100) return Math.floor(n / 100); return null; };
+
+function showApp(on) { $('#topbar').hidden = !on; $('#main').hidden = !on; $('#auth').hidden = on; }
+function enter(u) {
+  Object.assign(CABIN, { number: u.cabin, deck: deckOf(u.cabin), guest: esc(String(u.name).split(' ')[0]) });
+  userKey = STORE_PREFIX + u.email;
+  state = loadUser();
+  Object.assign(ui, freshUI());
+  lastSig = null;
+  if (!VIEWS[state.view]) state.view = 'dashboard';
+  $('#cabinChip').textContent = `Каюта ${CABIN.number}`;
+  showApp(true);
+  render();
+  tick();                                 // применяем таймеры, истёкшие пока гость был не в системе
+  window.scrollTo(0, 0);
+  const h = $('#view h1'); if (h) h.focus({ preventScroll: true });
+}
+function logout() {
+  save();
+  clearSession();
+  state = null; userKey = null;
+  authUI.mode = 'login';
+  showApp(false);
+  renderAuth();
+  window.scrollTo(0, 0);
+  toast('Вы вышли из аккаунта', 'info');
+}
+function demoLogin() {
+  const users = readUsers(); let u = users.find(x => x.email === DEMO.email);
+  if (!u) { u = { ...DEMO }; users.push(u); writeUsers(users); }
+  setSession(u.email); enter(u);
+}
+function renderAuth() {
+  const reg = authUI.mode === 'register';
+  $('#auth').innerHTML = `<div class="in"><div class="auth-box">
+    <div class="auth-brand">${SHIP_SVG}<div><b>Северная Звезда</b><small>Личный кабинет гостя</small></div></div>
+    <section class="card" aria-labelledby="h-auth">
+      <div class="seg" role="group" aria-label="Вход или регистрация">
+        <button type="button" class="seg-b" data-act="auth-mode" data-mode="login" aria-pressed="${!reg}">Вход</button>
+        <button type="button" class="seg-b" data-act="auth-mode" data-mode="register" aria-pressed="${reg}">Регистрация</button>
+      </div>
+      <h1 class="auth-h" id="h-auth">${reg ? 'Создайте профиль гостя' : 'С возвращением на борт'}</h1>
+      <form id="auth-form" class="stack" style="gap:14px" novalidate>
+        ${reg ? '<label class="fld" for="au-name"><span>Имя</span><input type="text" id="au-name" autocomplete="name" maxlength="60"></label>' : ''}
+        <label class="fld" for="au-email"><span>Email</span><input type="email" id="au-email" autocomplete="email" inputmode="email" maxlength="120"></label>
+        <label class="fld" for="au-pass"><span>Пароль</span><input type="password" id="au-pass" autocomplete="${reg ? 'new-password' : 'current-password'}" maxlength="64"></label>
+        ${reg ? '<label class="fld" for="au-cabin"><span>Номер каюты</span><input type="text" id="au-cabin" autocomplete="off" maxlength="6" placeholder="например, 7214"></label>' : ''}
+        <div class="err" id="auth-err" role="alert" hidden></div>
+        <button type="submit" class="btn primary">${reg ? 'Зарегистрироваться' : 'Войти'}</button>
+      </form>
+      <div class="or">или</div>
+      <button type="button" class="btn" data-act="demo-login">${icon('users')}Войти как демо-гость</button>
+      <p class="auth-note">Прототип: профили и пароли хранятся только в этом браузере. Реальные пароли не используйте.</p>
+    </section></div></div>`;
+  const em = $('#au-email'); if (em) em.value = authUI.email;
+}
+function authFail(msg, fieldId) {
+  const e = $('#auth-err'); e.textContent = msg; e.hidden = false;
+  const f = $('#' + fieldId); if (f) f.focus();
+}
+function submitAuth() {
+  const reg = authUI.mode === 'register';
+  const email = normEmail($('#au-email').value), pass = $('#au-pass').value;
+  authUI.email = email;
+  if (reg) {
+    const name = $('#au-name').value.trim().replace(/\s+/g, ' '), cabin = $('#au-cabin').value.trim();
+    if (name.length < 2) return authFail('Укажите имя, минимум 2 символа', 'au-name');
+    if (!EMAIL_RE.test(email)) return authFail('Введите email в формате name@example.com', 'au-email');
+    if (pass.length < 6) return authFail('Пароль: минимум 6 символов', 'au-pass');
+    if (!/^[0-9A-Za-zА-Яа-яЁё-]{1,6}$/.test(cabin)) return authFail('Номер каюты: до 6 символов, буквы и цифры', 'au-cabin');
+    const users = readUsers();
+    if (users.some(x => x.email === email)) return authFail('Этот email уже зарегистрирован. Войдите или укажите другой', 'au-email');
+    const u = { name, email, password: pass, cabin };
+    users.push(u); writeUsers(users); setSession(email); enter(u);
+    toast(`Добро пожаловать на борт, ${CABIN.guest}`);
+  } else {
+    if (!EMAIL_RE.test(email)) return authFail('Введите email в формате name@example.com', 'au-email');
+    const u = readUsers().find(x => x.email === email);
+    if (!u || u.password !== pass) return authFail('Неверный email или пароль', 'au-pass');
+    setSession(email); enter(u);
+    toast(`С возвращением, ${CABIN.guest}`);
+  }
+}
+document.addEventListener('submit', e => { if (e.target.id === 'auth-form') { e.preventDefault(); submitAuth(); } });
+
+/* ================= 10. INIT ================= */
+$('#tabs').innerHTML = TABS.map(t => `<button type="button" class="tab" data-act="nav" data-view="${t.v}">${icon(t.ic)}<span class="l-s">${t.s}</span><span class="l-l">${t.l}</span></button>`).join('');
+// Старт: если есть сессия и такой пользователь существует — входим, иначе показываем экран авторизации.
+{
+  const em = getSession(), u = em && readUsers().find(x => x.email === em);
+  if (u) enter(u); else { if (em) clearSession(); showApp(false); renderAuth(); }
+}                                   // сразу применяем таймеры, истёкшие пока страница была закрыта
+setInterval(tick, 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+</script>
